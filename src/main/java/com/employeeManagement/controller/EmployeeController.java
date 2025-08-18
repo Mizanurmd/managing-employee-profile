@@ -18,6 +18,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/employees")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class EmployeeController {
     private final EmployeeService employeeService;
     private final EmployeeRepository employeeRepository;
