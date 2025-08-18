@@ -5,6 +5,7 @@ import com.employeeManagement.model.Employee;
 import org.springframework.data.domain.Page;
 
 import java.io.IOException;
+import java.util.List;
 
 
 public interface EmployeeService {
@@ -16,5 +17,5 @@ public interface EmployeeService {
 
     Employee getEmployeeById(String id);
 
-    Page<Employee> getAllEmployees(int page, int size, String sortBy, String direction);
+    Page<Employee> searchEmployees(String name, String mobile, String email, String subject, int page, int size);
 }

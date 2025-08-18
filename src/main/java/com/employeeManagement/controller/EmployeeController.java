@@ -63,45 +63,18 @@ public class EmployeeController {
         return "Employee deleted successfully";
     }
 
-    @GetMapping
-    public ResponseEntity<Page<Employee>> getAllEmployees(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "asc") String direction
-    ) {
-        return new ResponseEntity<>(employeeService.getAllEmployees(page, size, sortBy, direction), HttpStatus.OK);
-
-    }
-
+    // Search Employees with Filters handler
     @GetMapping("/search")
-    public Page<Employee> searchEmployees(
+    public ResponseEntity<Page<Employee>> searchEmployees(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String mobile,
             @RequestParam(required = false) String email,
-            @RequestParam(required = false) String skills,
+            @RequestParam(required = false) String subject,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        return employeeRepository.findAll((root, query, cb) -> {
-            var predicates = cb.conjunction();
-
-            if (name != null) {
-                predicates = cb.and(predicates, cb.like(root.get("name"), "%" + name + "%"));
-            }
-            if (mobile != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("mobile"), mobile));
-            }
-            if (email != null) {
-                predicates = cb.and(predicates, cb.equal(root.get("email"), email));
-            }
-            if (skills != null) {
-                predicates = cb.and(predicates, cb.like(root.get("skills"), "%" + skills + "%"));
-            }
-
-            return predicates;
-        }, pageable);
+        Page<Employee> employees = employeeService.searchEmployees(name, mobile, email, subject, page, size);
+        return ResponseEntity.ok(employees);
     }
 
 

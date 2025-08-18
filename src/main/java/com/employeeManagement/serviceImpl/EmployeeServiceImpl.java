@@ -9,11 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
+import jakarta.persistence.criteria.Predicate;
+
 import java.util.Optional;
 
 @Service
@@ -112,10 +115,36 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public Page<Employee> getAllEmployees(int page, int size, String sortBy, String direction) {
-        Sort sort = direction.equalsIgnoreCase("desc") ?
-                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        return employeeRepository.findAll(pageable);
+    public Page<Employee> searchEmployees(String name, String mobile, String email, String subject, int page, int size) {
+        Specification<Employee> spec = (root, query, cb) -> {
+            Predicate predicate = cb.conjunction();
+
+            if (name != null && !name.isEmpty()) {
+                predicate = cb.and(predicate, cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+            }
+            if (mobile != null && !mobile.isEmpty()) {
+                predicate = cb.and(predicate, cb.like(root.get("mobile"), "%" + mobile + "%"));
+            }
+            if (email != null && !email.isEmpty()) {
+                predicate = cb.and(predicate, cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%"));
+            }
+            if (subject != null && !subject.isEmpty()) {
+                // Assuming subject is stored in "skills" or "highestEducation"
+                predicate = cb.and(predicate,
+                        cb.or(
+                                cb.like(cb.lower(root.get("skills")), "%" + subject.toLowerCase() + "%"),
+                                cb.like(cb.lower(root.get("highestEducation")), "%" + subject.toLowerCase() + "%")
+                        ));
+            }
+
+            return predicate;
+        };
+
+        Pageable pageable = PageRequest.of(page, size);
+        return employeeRepository.findAll(spec, pageable);
     }
+
 }
+
+
+
