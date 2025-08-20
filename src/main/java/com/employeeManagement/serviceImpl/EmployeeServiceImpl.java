@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import jakarta.persistence.criteria.Predicate;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -112,6 +113,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         return employeeRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Employee id with :: " + id + " not found"));
 
+    }
+
+    @Override
+    public List<Employee> getAllEmployees() {
+        return employeeRepository.findAll();
     }
 
     @Override

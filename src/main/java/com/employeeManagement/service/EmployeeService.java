@@ -17,5 +17,7 @@ public interface EmployeeService {
 
     Employee getEmployeeById(String id);
 
+    List<Employee> getAllEmployees();
+
     Page<Employee> searchEmployees(String name, String mobile, String email, String subject, int page, int size);
 }
