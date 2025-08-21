@@ -36,7 +36,12 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request.requestMatchers(
-                                "/api/v1/auth/**").permitAll()
+                                "/api/v1/auth/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/webjars/**").permitAll()
                         .requestMatchers("/api/v1/employees/**").authenticated()
                         .requestMatchers("/api/v1/employees/**").hasAnyAuthority("ADMIN", "USER")
                         .anyRequest().authenticated())
