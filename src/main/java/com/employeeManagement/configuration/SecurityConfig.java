@@ -36,9 +36,9 @@ public class SecurityConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request.requestMatchers(
-                                "/api/v1/auth/**","/api/v1/employees/**").permitAll()
-//                        .requestMatchers("/api/v1/employees/**").authenticated()
-//                        .requestMatchers("/api/v1/employees/**").hasAnyAuthority("ADMIN", "USER")
+                                "/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/employees/**").authenticated()
+                        .requestMatchers("/api/v1/employees/**").hasAnyAuthority("ADMIN", "USER")
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
