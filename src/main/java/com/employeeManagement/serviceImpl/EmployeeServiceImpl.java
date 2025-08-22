@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,7 +18,6 @@ import java.io.IOException;
 
 import jakarta.persistence.criteria.Predicate;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -116,11 +116,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
-    }
-
-    @Override
     public Page<Employee> searchEmployees(String name, String mobile, String email, String subject, int page, int size) {
         Specification<Employee> spec = (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
@@ -148,6 +143,17 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Pageable pageable = PageRequest.of(page, size);
         return employeeRepository.findAll(spec, pageable);
+    }
+
+    @Override
+    public Page<Employee> getAllEmployees(int page, int size, String sortBy, String sortDir) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return employeeRepository.findAll(pageable);
     }
 
 }

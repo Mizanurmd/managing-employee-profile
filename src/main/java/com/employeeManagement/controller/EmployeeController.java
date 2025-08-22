@@ -8,14 +8,13 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/employees")
@@ -64,14 +63,6 @@ public class EmployeeController {
         return "Employee deleted successfully";
     }
 
-    // Get all Employee List handler
-
-    @GetMapping("/all")
-    public ResponseEntity<List<Employee>> allEmployees() {
-        List<Employee> employees = employeeService.getAllEmployees();
-        return new ResponseEntity<>(employees, HttpStatus.OK);
-    }
-
     // Search Employees with Filters handler
     @GetMapping("/search")
     public ResponseEntity<Page<Employee>> searchEmployees(
@@ -84,6 +75,26 @@ public class EmployeeController {
     ) {
         Page<Employee> employees = employeeService.searchEmployees(name, mobile, email, subject, page, size);
         return ResponseEntity.ok(employees);
+    }
+
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAllEmployees(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+    ) {
+        Page<Employee> employeePage = employeeService.getAllEmployees(page, size, sortBy, sortDir);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("employees", employeePage.getContent());
+        response.put("currentPage", employeePage.getNumber());
+        response.put("totalItems", employeePage.getTotalElements());
+        response.put("totalPages", employeePage.getTotalPages());
+        response.put("sortBy", sortBy);
+        response.put("sortDir", sortDir);
+
+        return ResponseEntity.ok(response);
     }
 
 
