@@ -26,7 +26,7 @@ public class ReportService {
         List<Employee> pa = empRepo.findAll();
 
         // load file and compile
-        File file = ResourceUtils.getFile("classpath:employee_Report.jrxml");
+        File file = ResourceUtils.getFile("classpath:reports/all_employees_report.jrxml");
 
         JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
         JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(pa);
@@ -36,12 +36,12 @@ public class ReportService {
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, dataSource);
 
         if (reportFromat.equalsIgnoreCase("html")) {
-            JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "\\Employee_Report.html");
+            JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "\\all_employees_report.html");
         }
 
         if (reportFromat.equalsIgnoreCase("pdf")) {
 
-            JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\Employee_Report.pdf");
+            JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\all_employees_report.pdf");
 
         }
 

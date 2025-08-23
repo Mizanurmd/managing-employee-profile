@@ -11,8 +11,7 @@ import java.time.LocalDate;
         @UniqueConstraint(columnNames = {"id"}),
         @UniqueConstraint(columnNames = {"nid"})
 })
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
