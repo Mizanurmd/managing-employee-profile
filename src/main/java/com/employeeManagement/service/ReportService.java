@@ -20,70 +20,69 @@ public class ReportService {
     @Autowired
     private EmployeeRepository empRepo;
 
-    public String exportReport(String reportFromat) throws FileNotFoundException, JRException {
+    public byte[] exportReport(String reportFormat) throws FileNotFoundException, JRException {
+        // Fetch data
+        List<Employee> employees = empRepo.findAll();
 
-
-        String path = "C:\\Users\\88016\\Desktop\\Report";
-        List<Employee> pa = empRepo.findAll();
-
-        // load file and compile
+        // Load JRXML file
         File file = ResourceUtils.getFile("classpath:reports/all_employees_report.jrxml");
-
         JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(pa);
 
-        Map<String, Object> parameter = new HashMap<>();
-        parameter.put("Createdby", "MD.Mizanur Rahman");
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, dataSource);
+        // Data source
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employees);
 
-        if (reportFromat.equalsIgnoreCase("html")) {
-            JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "\\all_employees_report.html");
+        // Parameters
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("CreatedBy", "MD. Mizanur Rahman");
+
+        // Fill report
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+
+        // Export to required format
+        if (reportFormat.equalsIgnoreCase("pdf")) {
+            return JasperExportManager.exportReportToPdf(jasperPrint);
+        } else if (reportFormat.equalsIgnoreCase("html")) {
+            // For HTML you could export to a file OR return as string
+            return JasperExportManager.exportReportToHtmlFile(String.valueOf(jasperPrint)).getBytes();
         }
 
-        if (reportFromat.equalsIgnoreCase("pdf")) {
-
-            JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\all_employees_report.pdf");
-
-        }
-
-        return "Report generated in the path : " + path;
+        throw new IllegalArgumentException("Unsupported report format: " + reportFormat);
     }
 
     // Get employee by id method
-    public String exportReportById(String id, String reportFormat)
+    public byte[] exportReportById(String id, String reportFormat)
             throws FileNotFoundException, JRException {
 
-        String path = "C:\\Users\\88016\\Desktop\\Report";
-
-
+        // 🔹 Fetch employee by ID
         Employee employee = empRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
 
-        // 🔹 Jasper expects a collection, so wrap in List
-        List<Employee> pa = Collections.singletonList(employee);
+        // 🔹 Jasper expects a collection, so wrap employee in a List
+        List<Employee> employeeList = Collections.singletonList(employee);
 
-        // 🔹 load and compile the JRXML file
+        // 🔹 Load and compile the JRXML file
         File file = ResourceUtils.getFile("classpath:reports/employee_report.jrxml");
         JasperReport jasperReport = JasperCompileManager.compileReport(file.getAbsolutePath());
 
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(pa);
+        // 🔹 Data source
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(employeeList);
 
-        // 🔹 report parameters (if you need them inside jrxml)
-        Map<String, Object> parameter = new HashMap<>();
-        parameter.put("Createdby", "MD.Mizanur Rahman");
-        parameter.put("id", id);
-        // 🔹 fill the report
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameter, dataSource);
+        // 🔹 Report parameters
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("CreatedBy", "MD. Mizanur Rahman");
+        parameters.put("id", id);
 
-        // 🔹 export depending on format
-        if (reportFormat.equalsIgnoreCase("html")) {
-            JasperExportManager.exportReportToHtmlFile(jasperPrint, path + "\\Employee_Report.html");
-        }
+        // 🔹 Fill the report
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+
+        // 🔹 Export depending on format
         if (reportFormat.equalsIgnoreCase("pdf")) {
-            JasperExportManager.exportReportToPdfFile(jasperPrint, path + "\\Employee_Report.pdf");
+            return JasperExportManager.exportReportToPdf(jasperPrint);
+        } else if (reportFormat.equalsIgnoreCase("html")) {
+            return JasperExportManager.exportReportToHtmlFile(String.valueOf(jasperPrint)).getBytes(); // return HTML as bytes
         }
 
-        return "Report generated in the path : " + path;
+        throw new IllegalArgumentException("Unsupported format: " + reportFormat);
     }
 
 

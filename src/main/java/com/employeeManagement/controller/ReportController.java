@@ -3,6 +3,9 @@ package com.employeeManagement.controller;
 import com.employeeManagement.service.ReportService;
 import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileNotFoundException;
@@ -17,17 +20,44 @@ public class ReportController {
     // Controller for Report generated all employees
 
     @GetMapping("/{format}")
-    public String generateReport(@PathVariable String format) throws FileNotFoundException, JRException {
-        System.out.println("Pdf is generated-------------------------------");
-        return reportService.exportReport(format);
+    public ResponseEntity<byte[]> generateReport(@PathVariable String format)
+            throws FileNotFoundException, JRException {
 
+        byte[] report = reportService.exportReport(format);
+
+        HttpHeaders headers = new HttpHeaders();
+        if (format.equalsIgnoreCase("pdf")) {
+            headers.setContentType(MediaType.APPLICATION_PDF);
+        } else {
+            headers.setContentType(MediaType.TEXT_HTML);
+        }
+
+        headers.setContentDispositionFormData("inline", "employees_report." + format);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(report);
     }
 
-    // Controller for Report generated single employee
     @GetMapping("/{id}/{format}")
-    public String generateReportById(@PathVariable("id") String id, @PathVariable("format") String format) throws FileNotFoundException, JRException {
-        System.out.println("Pdf is generated-------------------------------");
-        return reportService.exportReportById(id, format);
+    public ResponseEntity<byte[]> generateReportById(
+            @PathVariable String id,
+            @PathVariable String format) throws FileNotFoundException, JRException {
 
+        byte[] report = reportService.exportReportById(id, format);
+
+        HttpHeaders headers = new HttpHeaders();
+        if (format.equalsIgnoreCase("pdf")) {
+            headers.setContentType(MediaType.APPLICATION_PDF);
+        } else {
+            headers.setContentType(MediaType.TEXT_HTML);
+        }
+
+        headers.setContentDispositionFormData("inline", "employee_report." + format);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(report);
     }
+
 }
