@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="employee_report" pageWidth="595" pageHeight="842" columnWidth="555"
+              leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a2e275e8-9727-4743-82ac-bef310629351">
+
+    <!-- Fields -->
+    <field name="id" class="java.lang.String"/>
+    <field name="nid" class="java.lang.String"/>
+    <field name="name" class="java.lang.String"/>
+    <field name="dateOfBirth" class="java.time.LocalDate"/>
+    <field name="email" class="java.lang.String"/>
+    <field name="gender" class="java.lang.String"/>
+    <field name="highestEducation" class="java.lang.String"/>
+    <field name="mobile" class="java.lang.String"/>
+    <field name="presentAddress" class="java.lang.String"/>
+    <field name="permanentAddress" class="java.lang.String"/>
+    <field name="skills" class="java.lang.String"/>
+    <field name="profileImage" class="byte[]"/>
+
+    <!-- Title -->
+    <title>
+        <band height="86" splitType="Stretch">
+            <staticText>
+                <reportElement x="0" y="12" width="520" height="40" forecolor="#0272C7"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="Arial Black" size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[ADDIEE SOFT LTD]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="52" width="520" height="34" forecolor="#0272C7"/>
+                <textElement textAlignment="Center" verticalAlignment="Justified">
+                    <font fontName="Arial Black" size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[EMPLOYEE REPORT - 2025]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <!-- Detail -->
+    <detail>
+        <band height="300" splitType="Stretch">
+
+            <!-- Name -->
+            <staticText>
+                <reportElement x="0" y="1" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Name]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="1" width="230" height="30"/>
+                <textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+            </textField>
+
+            <!-- Date of Birth -->
+            <staticText>
+                <reportElement x="0" y="31" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Date of Birth]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="31" width="230" height="30"/>
+                <textFieldExpression><![CDATA[$F{dateOfBirth}]]></textFieldExpression>
+            </textField>
+
+            <!-- NID -->
+            <staticText>
+                <reportElement x="0" y="61" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[NID NO]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="61" width="230" height="30"/>
+                <textFieldExpression><![CDATA[$F{nid}]]></textFieldExpression>
+            </textField>
+
+            <!-- Email -->
+            <staticText>
+                <reportElement x="0" y="91" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Email]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="91" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
+            </textField>
+
+            <!-- Mobile -->
+            <staticText>
+                <reportElement x="0" y="121" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Mobile]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="121" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{mobile}]]></textFieldExpression>
+            </textField>
+
+            <!-- Present Address -->
+            <staticText>
+                <reportElement x="0" y="151" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Present Address]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="151" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{presentAddress}]]></textFieldExpression>
+            </textField>
+
+            <!-- Permanent Address -->
+            <staticText>
+                <reportElement x="0" y="181" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Permanent Address]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="181" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{permanentAddress}]]></textFieldExpression>
+            </textField>
+
+            <!-- Highest Education -->
+            <staticText>
+                <reportElement x="0" y="211" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Education]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="211" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{highestEducation}]]></textFieldExpression>
+            </textField>
+
+            <!-- Skills -->
+            <staticText>
+                <reportElement x="0" y="240" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Skills]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="240" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{skills}]]></textFieldExpression>
+            </textField>
+
+            <!-- Gender -->
+            <staticText>
+                <reportElement x="0" y="270" width="140" height="30"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle"/>
+                <text><![CDATA[Gender]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="150" y="270" width="370" height="30"/>
+                <textFieldExpression><![CDATA[$F{gender}]]></textFieldExpression>
+            </textField>
+
+            <!-- Profile Image -->
+            <image scaleImage="FillFrame" hAlign="Center" vAlign="Middle">
+                <reportElement x="380" y="1" width="140" height="89"/>
+                <imageExpression><![CDATA[
+                    $F{profileImage} == null ? null : javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream($F{profileImage}))
+                ]]></imageExpression>
+            </image>
+
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="54" splitType="Stretch"/>
+    </pageFooter>
+
+    <summary>
+        <band height="42" splitType="Stretch"/>
+    </summary>
+</jasperReport>
