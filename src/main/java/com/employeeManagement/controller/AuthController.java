@@ -1,5 +1,7 @@
 package com.employeeManagement.controller;
 
+import com.employeeManagement.dto.AuthResponse;
+import com.employeeManagement.dto.LoginRequest;
 import com.employeeManagement.dto.ReqRest;
 import com.employeeManagement.service.OurUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +20,22 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ReqRest> regeister(@RequestBody ReqRest reg) {
+    public ResponseEntity<AuthResponse> register(@RequestBody ReqRest reg) {
         return ResponseEntity.ok(ourUserService.registerUser(reg));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ReqRest> login(@RequestBody ReqRest login) {
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest login) {
         return ResponseEntity.ok(ourUserService.loginUser(login));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ReqRest> refreshToken(@RequestBody ReqRest req) {
-        return ResponseEntity.ok(ourUserService.refreshToken(req));
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody AuthResponse authResponse) {
+        return ResponseEntity.ok(ourUserService.refreshToken(authResponse));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ReqRest> logOut() {
+    public ResponseEntity<AuthResponse> logOut() {
         return ResponseEntity.ok(ourUserService.logoutUser());
     }
 

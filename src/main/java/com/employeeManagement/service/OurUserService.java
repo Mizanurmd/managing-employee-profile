@@ -1,5 +1,7 @@
 package com.employeeManagement.service;
 
+import com.employeeManagement.dto.AuthResponse;
+import com.employeeManagement.dto.LoginRequest;
 import com.employeeManagement.dto.ReqRest;
 import com.employeeManagement.jwt.JWTUtil;
 import com.employeeManagement.model.OurUser;
@@ -34,62 +36,71 @@ public class OurUserService {
 
     }
 
-    //=================Register user ================//
-    public ReqRest registerUser(ReqRest req) {
-        ReqRest resp = new ReqRest();
+    //================= user registration ================//
+    public AuthResponse registerUser(ReqRest req) {
+        AuthResponse res = new AuthResponse();
         try {
+            //  check duplicate email
+            if (usersRepo.existsByEmail(req.getEmail())) {
+                res.setStatusCode(409);
+                res.setError("Email is already in use!");
+                return res;
+            }
 
             OurUser ourUser = new OurUser();
-            ourUser.setUsername(req.getName());
+            ourUser.setUsername(req.getUsername());
             ourUser.setEmail(req.getEmail());
             ourUser.setPassword(passwordEncoder.encode(req.getPassword()));
             ourUser.setRole(req.getRole());
-            OurUser saveReg = usersRepo.save(ourUser);
-            if (saveReg.getId() > 0) {
-                resp.setUser(saveReg);
-                resp.setMessage("User registered successfully");
-                resp.setStatusCode(200);
 
+            OurUser savedUser = usersRepo.save(ourUser);
+
+            if (savedUser.getId() > 0) {
+                res.setMessage("User registered successfully");
+                res.setStatusCode(200);
+            } else {
+                res.setStatusCode(500);
+                res.setError("User registration failed");
             }
         } catch (Exception e) {
-            resp.setStatusCode(500);
-            resp.setError(e.getMessage());
+            res.setStatusCode(500);
+            res.setError(e.getMessage());
         }
-        return resp;
+        return res;
     }
 
-    //======================== Login by Register user =====================//
-    public ReqRest loginUser(ReqRest req) {
-        ReqRest resp = new ReqRest();
+    //======================== Login by Registered user =====================//
+    public AuthResponse loginUser(LoginRequest logReq) {
+        AuthResponse response = new AuthResponse();
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword()));
-            var user = usersRepo.findByEmail(req.getEmail()).orElseThrow();
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(logReq.getEmail(), logReq.getPassword()));
+            var user = usersRepo.findByEmail(logReq.getEmail()).orElseThrow();
             var jwt = jwtUtil.generateToken(user);
             var refreshToken = jwtUtil.generateRefreshToken(new HashMap<>(), user);
-            resp.setStatusCode(200);
-            resp.setToken(jwt);
-            resp.setRole(user.getRole());
-            resp.setRefreshToken(refreshToken);
-            resp.setExpirationTime("24Hrs");
-            resp.setMessage("Successfully Logged In");
+            response.setStatusCode(200);
+            response.setToken(jwt);
+            response.setRole(user.getRole());
+            response.setRefreshToken(refreshToken);
+            response.setExpirationTime("24Hrs");
+            response.setMessage("Successfully Logged In");
         } catch (Exception e) {
-            resp.setStatusCode(500);
-            resp.setMessage(e.getMessage());
+            response.setStatusCode(500);
+            response.setMessage(e.getMessage());
         }
-        return resp;
+        return response;
     }
 
     //================= Refresh token ======================//
-    public ReqRest refreshToken(ReqRest refreshTokenReqrest) {
-        ReqRest response = new ReqRest();
+    public AuthResponse refreshToken(AuthResponse refreshTokenResponse) {
+        AuthResponse response = new AuthResponse();
         try {
-            String ourEmail = jwtUtil.extractUsername(refreshTokenReqrest.getToken());
+            String ourEmail = jwtUtil.extractUsername(refreshTokenResponse.getToken());
             OurUser users = usersRepo.findByEmail(ourEmail).orElseThrow();
-            if (jwtUtil.isTokenValid(refreshTokenReqrest.getToken(), users)) {
+            if (jwtUtil.isTokenValid(refreshTokenResponse.getToken(), users)) {
                 var jwt = jwtUtil.generateToken(users);
                 response.setStatusCode(200);
                 response.setToken(jwt);
-                response.setRefreshToken(refreshTokenReqrest.getToken());
+                response.setRefreshToken(refreshTokenResponse.getToken());
                 response.setExpirationTime("24Hr");
                 response.setMessage("Successfully Refreshed Token");
             }
@@ -104,8 +115,8 @@ public class OurUserService {
     }
 
     //=========================== Logout ================================//
-    public ReqRest logoutUser() {
-        ReqRest resp = new ReqRest();
+    public AuthResponse logoutUser() {
+        AuthResponse resp = new AuthResponse();
         try {
             resp.setMessage("Successfully Logged Out");
             resp.setStatusCode(200);
