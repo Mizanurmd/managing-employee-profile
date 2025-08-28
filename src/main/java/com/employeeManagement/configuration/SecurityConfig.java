@@ -42,8 +42,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/webjars/**").permitAll()
-                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports").authenticated()
-                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**", "/api/v1/teachers/**").authenticated()
+                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**", "/api/v1/teachers/**").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
