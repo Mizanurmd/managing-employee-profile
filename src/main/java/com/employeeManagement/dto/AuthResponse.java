@@ -10,11 +10,10 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthResponse {
     private int statusCode;
-    private String error;
     private String message;
     private String token;
     private String refreshToken;
     private String expirationTime;
     private Role role;
-
+    private String error;
 }
