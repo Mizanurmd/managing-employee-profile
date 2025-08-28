@@ -26,23 +26,24 @@ public class TeacherController {
     }
 
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<TeacherResponseDto> createTeacher(
             @Valid @ModelAttribute TeacherRequestDto dto,
             @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
 
-        String imagePath = null;
-
-        if (file != null && !file.isEmpty()) {
-            File uploadDir = new File("C:/Users/DELL-PC/Desktop/uploads");
-            if (!uploadDir.exists()) uploadDir.mkdirs();
-
-            imagePath = "/uploads/" + file.getOriginalFilename();
-            file.transferTo(new File(uploadDir, file.getOriginalFilename()));
-        }
-
-        TeacherResponseDto response = teacherService.addTeacher(dto, imagePath);
+        TeacherResponseDto response = teacherService.addTeacher(dto, file);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TeacherResponseDto> updateTeacher(
+            @PathVariable("id") long id,
+            @ModelAttribute TeacherRequestDto dto,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+
+        TeacherResponseDto response = teacherService.updateTeacher(id, dto, file);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 

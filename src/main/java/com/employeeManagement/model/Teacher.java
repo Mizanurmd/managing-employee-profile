@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @Entity
-@Table(name="teacher")
+@Table(name = "teacher")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -63,7 +63,7 @@ public class Teacher {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "teacher_skills", joinColumns = @JoinColumn(name = "teacher_id"))
     @Column(name = "skill")
-    private List<String> skills = new ArrayList<>() ;
+    private List<String> skills = new ArrayList<>();
 
     @NotBlank
     private String highestEducation;

@@ -1,5 +1,6 @@
 package com.employeeManagement.serviceImpl;
 
+
 import com.employeeManagement.dto.TeacherRequestDto;
 import com.employeeManagement.dto.TeacherResponseDto;
 import com.employeeManagement.enums.Gender;
@@ -8,13 +9,23 @@ import com.employeeManagement.repository.TeacherRepository;
 import com.employeeManagement.service.TeacherService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class TeacherServiceImpl implements TeacherService {
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
     private final TeacherRepository teacherRepository;
     private static final AtomicLong counter = new AtomicLong(1);
 
@@ -29,20 +40,90 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public TeacherResponseDto addTeacher(TeacherRequestDto teacherRequestDto,String imagePath) {
+    public TeacherResponseDto addTeacher(TeacherRequestDto teacherRequestDto, MultipartFile imagePath) {
         Teacher teacher = new Teacher();
-        BeanUtils.copyProperties(teacherRequestDto, teacher);
+        // Basic fields
         teacher.setTeacherId(generateTeacherId());
-        teacher.setProfileImagePath(imagePath);
+        teacher.setName(teacherRequestDto.getName());
+        teacher.setMobile(teacherRequestDto.getMobile());
+        teacher.setEmail(teacherRequestDto.getEmail());
+        teacher.setNid(teacherRequestDto.getNid());
+        teacher.setDateOfBirth(teacherRequestDto.getDateOfBirth());
+        teacher.setPresentAddress(teacherRequestDto.getPresentAddress());
+        teacher.setPermanentAddress(teacherRequestDto.getPermanentAddress());
+        teacher.setGender(teacherRequestDto.getGender());
+        teacher.setSkills(teacherRequestDto.getSkills());
+        teacher.setHighestEducation(teacherRequestDto.getHighestEducation());
 
+        // photo if provided
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
+
+                // Create directory if not exists
+                Files.createDirectories(path);
+
+                // Clean file name
+                String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
+
+                // Save file to the folder
+                Path targetLocation = path.resolve(fileName);
+                Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
+                teacher.setProfileImagePath(targetLocation.toString());
+
+
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
+            }
+        }
         Teacher savedTeacher = teacherRepository.save(teacher);
 
         return convertToDto(savedTeacher);
     }
 
     @Override
-    public TeacherResponseDto updateTeacher(Long id, TeacherRequestDto teacherRequestDto) {
-        return null;
+    public TeacherResponseDto updateTeacher(Long id, TeacherRequestDto teacherRequestDto, MultipartFile imagePath) {
+        Teacher teacher = teacherRepository.findById(id).orElseThrow(() -> new RuntimeException("Teacher Not Found with :: " + id));
+        // update fields
+        teacher.setName(teacherRequestDto.getName());
+        teacher.setMobile(teacherRequestDto.getMobile());
+        teacher.setEmail(teacherRequestDto.getEmail());
+        teacher.setNid(teacherRequestDto.getNid());
+        teacher.setDateOfBirth(teacherRequestDto.getDateOfBirth());
+        teacher.setPresentAddress(teacherRequestDto.getPresentAddress());
+        teacher.setPermanentAddress(teacherRequestDto.getPermanentAddress());
+        teacher.setGender(teacherRequestDto.getGender());
+        teacher.setSkills(teacherRequestDto.getSkills());
+        teacher.setHighestEducation(teacherRequestDto.getHighestEducation());
+
+        // Update photo if provided
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
+
+                // Create directory if not exists
+                Files.createDirectories(path);
+
+                // Clean file name
+                String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
+
+                // Save file to the folder
+                Path targetLocation = path.resolve(fileName);
+                Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+
+                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
+                teacher.setProfileImagePath(targetLocation.toString());
+
+
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
+            }
+        }
+        Teacher updateTeacher = teacherRepository.save(teacher);
+        return convertToDto(updateTeacher);
+
     }
 
     @Override
