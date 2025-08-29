@@ -2,9 +2,13 @@ package com.employeeManagement.controller;
 
 import com.employeeManagement.dto.TeacherRequestDto;
 import com.employeeManagement.dto.TeacherResponseDto;
+import com.employeeManagement.model.Teacher;
 import com.employeeManagement.service.TeacherService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/teachers")
@@ -44,6 +50,51 @@ public class TeacherController {
 
         TeacherResponseDto response = teacherService.updateTeacher(id, dto, file);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Teacher> getTeacherById(@PathVariable("id") long id) {
+        Teacher teacher = teacherService.getTeacherById(id);
+        return new ResponseEntity<>(teacher, HttpStatus.OK);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<Map<String, Object>> getAllTeachers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
+
+    ) {
+        Page<Teacher> teacherPage = teacherService.getAllTeachers(page, size, sortBy, sortDir);
+        Map<String, Object> map = new HashMap<>();
+        map.put("teachers", teacherPage.getContent());
+        map.put("currentPage", teacherPage.getNumber());
+        map.put("totalItems", teacherPage.getTotalElements());
+        map.put("totalPages", teacherPage.getTotalPages());
+        map.put("sortBy", sortBy);
+        map.put("sortDir", sortDir);
+        return new ResponseEntity<>(map, HttpStatus.OK);
+
+    }
+
+    @GetMapping("/search")
+    public Page<TeacherResponseDto> searchTeachers(
+            @RequestParam(defaultValue = "") String name,
+            @RequestParam(defaultValue = "") String mobile,
+            @RequestParam(defaultValue = "") String email,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+
+    ) {
+
+        return teacherService.searchTeacher(name, mobile, email, page, size);
+
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTeacher(@PathVariable("id") long id) {
+        teacherService.deleteTeacher(id);
     }
 
 

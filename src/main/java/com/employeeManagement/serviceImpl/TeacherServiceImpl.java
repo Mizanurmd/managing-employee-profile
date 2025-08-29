@@ -7,10 +7,14 @@ import com.employeeManagement.enums.Gender;
 import com.employeeManagement.model.Teacher;
 import com.employeeManagement.repository.TeacherRepository;
 import com.employeeManagement.service.TeacherService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +45,17 @@ public class TeacherServiceImpl implements TeacherService {
 
     @Override
     public TeacherResponseDto addTeacher(TeacherRequestDto teacherRequestDto, MultipartFile imagePath) {
+        // ===== Validation: unique fields =====
+        if (teacherRepository.existsByEmail(teacherRequestDto.getEmail())) {
+            throw new RuntimeException("Email already exists: " + teacherRequestDto.getEmail());
+        }
+        if (teacherRepository.existsByMobile(teacherRequestDto.getMobile())) {
+            throw new RuntimeException("Mobile number already exists: " + teacherRequestDto.getMobile());
+        }
+        if (teacherRepository.existsByNid(teacherRequestDto.getNid())) {
+            throw new RuntimeException("NID already exists: " + teacherRequestDto.getNid());
+        }
+
         Teacher teacher = new Teacher();
         // Basic fields
         teacher.setTeacherId(generateTeacherId());
@@ -127,23 +142,40 @@ public class TeacherServiceImpl implements TeacherService {
     }
 
     @Override
-    public TeacherResponseDto deleteTeacher(Long id) {
-        return null;
+    public void deleteTeacher(Long id) {
+        if (!teacherRepository.existsById(id)) {
+            throw new EntityNotFoundException("Teacher not found");
+        }
+        teacherRepository.deleteById(id);
     }
 
     @Override
-    public TeacherResponseDto getTeacherById(Long id) {
-        return null;
+    public Teacher getTeacherById(Long id) {
+        return teacherRepository.findById(id).orElseThrow(() -> new RuntimeException("Teacher Not Found with :: " + id));
     }
 
     @Override
-    public Page<TeacherResponseDto> getAllTeachers(int page, int size, String sortBy, String order) {
-        return null;
+    public Page<Teacher> getAllTeachers(int page, int size, String sortBy, String sorDir) {
+        Sort sort = sorDir.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return teacherRepository.findAll(pageable);
     }
 
     @Override
     public Page<TeacherResponseDto> searchTeacher(String name, String email, String mobile, int page, int size) {
-        return null;
+        Pageable pageable = PageRequest.of(page, size);
+        return teacherRepository.findAll((root, query, cb) -> {
+            var predicate = cb.conjunction();
+            if (name != null && !name.isEmpty())
+                predicate = cb.and(predicate, cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%"));
+            if (mobile != null && !mobile.isEmpty())
+                predicate = cb.and(predicate, cb.equal(root.get("mobile"), mobile));
+            if (email != null && !email.isEmpty())
+                predicate = cb.and(predicate, cb.equal(cb.lower(root.get("email")), email.toLowerCase()));
+            return predicate;
+        }, pageable).map(this::convertToDto);
     }
 
     // convert Teacher into dto
@@ -154,10 +186,14 @@ public class TeacherServiceImpl implements TeacherService {
                 .mobile(teacher.getMobile())
                 .email(teacher.getEmail())
                 .nid(teacher.getNid())
+                .dateOfBirth(teacher.getDateOfBirth())
+                .presentAddress(teacher.getPresentAddress())
+                .permanentAddress(teacher.getPermanentAddress())
                 .gender(Gender.valueOf(teacher.getGender().name()))
                 .highestEducation(teacher.getHighestEducation())
                 .skills(teacher.getSkills())
                 .profileImagePath(teacher.getProfileImagePath())
                 .build();
     }
+
 }
