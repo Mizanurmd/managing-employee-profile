@@ -163,11 +163,21 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     @Override
     public List<Employee> searchEmployeeByCriteriaWithDate(String id, String email, String mobile, LocalDate fromDate, LocalDate toDate) {
-        // data validation logic
+        // 1. Check if all search criteria are empty
+        boolean allEmpty = (id == null || id.isBlank()) &&
+                (email == null || email.isBlank()) &&
+                (mobile == null || mobile.isBlank()) &&
+                (fromDate == null && toDate == null);
+
+        if (allEmpty) {
+            throw new IllegalArgumentException("At least one search field must be provided: id, email, mobile, or fromDate & toDate");
+        }
+        // 2. Validate dates
         if ((fromDate != null && toDate == null) || (fromDate == null && toDate != null)) {
             throw new IllegalArgumentException("Both fromData and toDate must be provided together");
 
         }
+        // 3. Search with dates if provided
         if (fromDate != null && toDate != null) {
             return employeeRepository.searchEmployeeByCriteriaWithDate(id, email, mobile, fromDate, toDate);
         } else {
