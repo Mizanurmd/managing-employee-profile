@@ -5,6 +5,8 @@ import com.employeeManagement.model.Employee;
 import org.springframework.data.domain.Page;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.List;
 
 
 public interface EmployeeService {
@@ -19,4 +21,8 @@ public interface EmployeeService {
     Page<Employee> searchEmployees(String name, String mobile, String email, String subject, int page, int size);
 
     Page<Employee> getAllEmployees(int page, int size, String sortBy, String sortDir);
+
+    List<Employee> searchEmployeeByCriteriaWithDate(String id, String email, String mobile, LocalDate formDate, LocalDate toDate);
+
+
 }

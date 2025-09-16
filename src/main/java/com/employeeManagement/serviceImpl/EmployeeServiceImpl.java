@@ -5,6 +5,7 @@ import com.employeeManagement.model.Employee;
 import com.employeeManagement.repository.EmployeeRepository;
 import com.employeeManagement.service.EmployeeService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,8 @@ import java.io.IOException;
 
 import jakarta.persistence.criteria.Predicate;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -155,6 +158,24 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return employeeRepository.findAll(pageable);
     }
+
+
+    @Transactional
+    @Override
+    public List<Employee> searchEmployeeByCriteriaWithDate(String id, String email, String mobile, LocalDate fromDate, LocalDate toDate) {
+        // data validation logic
+        if ((fromDate != null && toDate == null) || (fromDate == null && toDate != null)) {
+            throw new IllegalArgumentException("Both fromData and toDate must be provided together");
+
+        }
+        if (fromDate != null && toDate != null) {
+            return employeeRepository.searchEmployeeByCriteriaWithDate(id, email, mobile, fromDate, toDate);
+        } else {
+            return employeeRepository.searchEmployeeByCriteriaWithoutDate(id, email, mobile);
+        }
+
+    }
+
 
 }
 
