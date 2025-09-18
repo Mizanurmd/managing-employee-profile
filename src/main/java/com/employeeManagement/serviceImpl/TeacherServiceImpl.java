@@ -47,7 +47,10 @@ public class TeacherServiceImpl implements TeacherService {
 
     // generate teacher id =00000001 ......
     public String generateTeacherId() {
-        return String.format("%08d", counter.getAndIncrement());
+        String lastId = teacherRepository.findMaxTeacherId(); // e.g., "00000003"
+        int nextId = (lastId != null ? Integer.parseInt(lastId) : 0) + 1;
+        String formattedId = String.format("%08d", nextId);
+        return formattedId;
     }
 
     @Override
@@ -84,16 +87,14 @@ public class TeacherServiceImpl implements TeacherService {
 
                 // Create directory if not exists
                 Files.createDirectories(path);
-
                 // Clean file name
                 String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
-
-                // Save file to the folder
-                Path targetLocation = path.resolve(fileName);
+                fileName = fileName.replace(" ", "_"); // optional: replace spaces
+                Path targetLocation = Paths.get(uploadDir).resolve(fileName);
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
-                teacher.setProfileImagePath(targetLocation.toString());
+                // Store this relative path in DB
+                teacher.setProfileImagePath("/uploads/" + fileName);
 
 
             } catch (Exception e) {
