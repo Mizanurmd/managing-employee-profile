@@ -28,24 +28,19 @@ public class Teacher {
     private String teacherId; // auto generated (00000001, etc.)
 
     @NotBlank
-    @Pattern(regexp = "^[A-Za-z. ]+$", message = "Name can only contain letters, dot, and spaces")
     private String name;
 
     @NotBlank
-    @Pattern(regexp = "^[0-9]{11}$", message = "Mobile must be 11 digits")
     private String mobile;
 
     @NotBlank
-    @Email(message = "Invalid email format")
     private String email;
 
     @NotNull
     @Column(unique = true)
-    @Pattern(regexp = "^(\\d{10}|\\d{17})$", message = "NID must be 10 or 17 digits")
     private String nid;
 
     @NotNull
-    @Past(message = "DOB must be before current date")
     private LocalDate dateOfBirth;
 
     @Size(max = 200)
@@ -69,4 +64,11 @@ public class Teacher {
     private String highestEducation;
 
     private String profileImagePath; // store file path
+
+    // Soft delete fields
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDate deletedAt;
 }

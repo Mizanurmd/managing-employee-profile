@@ -19,4 +19,6 @@ public interface TeacherService {
     Page<Teacher> getAllTeachers(int page, int size, String sortBy, String sortDir);
 
     Page<TeacherResponseDto> searchTeacher(String name, String email, String mobile, int page, int size);
+
+    Teacher softDeleteTeacher(String teacherId);
 }

@@ -1,5 +1,6 @@
 package com.employeeManagement.controller;
 
+import com.employeeManagement.dto.ApiResponse;
 import com.employeeManagement.dto.TeacherRequestDto;
 import com.employeeManagement.dto.TeacherResponseDto;
 import com.employeeManagement.model.Teacher;
@@ -97,5 +98,26 @@ public class TeacherController {
         teacherService.deleteTeacher(id);
     }
 
+    // Soft deleted handler
+    @DeleteMapping("/soft-delete/{teacherId}")
+    public ResponseEntity<ApiResponse<Teacher>> SoftDeleteTeacher(@PathVariable("teacherId") String teacherId) {
+        ApiResponse response = new ApiResponse();
+        try {
+            response.setStatus("Success");
+            response.setMessage("Teacher soft deleted and backed up successfully");
+            response.setMCode("200");
+            response.setData(teacherService.softDeleteTeacher(teacherId));
+            return new ResponseEntity<>(response, HttpStatus.OK);
+
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Soft Delete Teacher Failed");
+            response.setMCode("500");
+            response.setData(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
+        }
+
+    }
 
 }

@@ -5,10 +5,12 @@ import com.employeeManagement.dto.TeacherRequestDto;
 import com.employeeManagement.dto.TeacherResponseDto;
 import com.employeeManagement.enums.Gender;
 import com.employeeManagement.model.Teacher;
+import com.employeeManagement.model.TeacherBackup;
+import com.employeeManagement.repository.TeacherBackupRepository;
 import com.employeeManagement.repository.TeacherRepository;
 import com.employeeManagement.service.TeacherService;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.BeanUtils;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -23,24 +25,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
+@Transactional
 public class TeacherServiceImpl implements TeacherService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
     private final TeacherRepository teacherRepository;
+    private final TeacherBackupRepository teacherBackupRepository;
     private static final AtomicLong counter = new AtomicLong(1);
 
     @Autowired
-    public TeacherServiceImpl(TeacherRepository teacherRepository) {
+    public TeacherServiceImpl(TeacherRepository teacherRepository, TeacherBackupRepository teacherBackupRepository) {
         this.teacherRepository = teacherRepository;
+        this.teacherBackupRepository = teacherBackupRepository;
     }
 
     // generate teacher id =00000001 ......
     public String generateTeacherId() {
-        return String.format("%08d", counter.getAndIncrement());
+        String lastId = teacherRepository.findMaxTeacherId(); // e.g., "00000003"
+        int nextId = (lastId != null ? Integer.parseInt(lastId) : 0) + 1;
+        String formattedId = String.format("%08d", nextId);
+        return formattedId;
     }
 
     @Override
@@ -85,14 +95,14 @@ public class TeacherServiceImpl implements TeacherService {
                 Path targetLocation = path.resolve(fileName);
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-                // Save only the file name in DB
-                teacher.setProfileImagePath(fileName);
+                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
+                teacher.setProfileImagePath(targetLocation.toString());
+
 
             } catch (Exception e) {
                 throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
             }
         }
-
         Teacher savedTeacher = teacherRepository.save(teacher);
 
         return convertToDto(savedTeacher);
@@ -180,12 +190,6 @@ public class TeacherServiceImpl implements TeacherService {
 
     // convert Teacher into dto
     private TeacherResponseDto convertToDto(Teacher teacher) {
-        String imageUrl = null;
-        if (teacher.getProfileImagePath() != null && !teacher.getProfileImagePath().isEmpty()) {
-            // Extract only the file name
-            String fileName = Paths.get(teacher.getProfileImagePath()).getFileName().toString();
-            imageUrl = "http://localhost:8081/uploads/" + fileName;
-        }
         return TeacherResponseDto.builder()
                 .teacherId(teacher.getTeacherId())
                 .name(teacher.getName())
@@ -198,8 +202,49 @@ public class TeacherServiceImpl implements TeacherService {
                 .gender(Gender.valueOf(teacher.getGender().name()))
                 .highestEducation(teacher.getHighestEducation())
                 .skills(teacher.getSkills())
-                .profileImagePath(imageUrl)
+                .profileImagePath(teacher.getProfileImagePath())
                 .build();
     }
+
+    // Convert Teacher -> TeacherBackup
+    private TeacherBackup convertToBackup(Teacher teacher) {
+        return TeacherBackup.builder()
+                .teacherId(teacher.getTeacherId())
+                .name(teacher.getName())
+                .mobile(teacher.getMobile())
+                .email(teacher.getEmail())
+                .nid(teacher.getNid())
+                .dateOfBirth(teacher.getDateOfBirth())
+                .presentAddress(teacher.getPresentAddress())
+                .permanentAddress(teacher.getPermanentAddress())
+                .gender(teacher.getGender().name()) // store enum as String
+                .highestEducation(teacher.getHighestEducation())
+                .profileImagePath(teacher.getProfileImagePath())
+                .skills(new ArrayList<>(teacher.getSkills())) // prevent mutability issues
+                .deletedAt(LocalDate.now())
+                .build();
+    }
+
+    //Soft delete
+    @Override
+    public Teacher softDeleteTeacher(String teacherId) {
+        Teacher teacher = teacherRepository.findByTeacherId(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher Not Found with :: " + teacherId));
+
+        if (teacher.isDeleted() == true) {
+            throw new RuntimeException("Teacher with ID " + teacherId + " is already deleted.");
+        }
+
+        // Backup record
+        TeacherBackup backupEntity = convertToBackup(teacher);
+        teacherBackupRepository.save(backupEntity);
+
+        // Mark teacher as soft deleted
+        teacher.setDeleted(true);
+        teacher.setDeletedAt(LocalDate.now());
+        return teacherRepository.save(teacher);
+    }
+
+
 
 }

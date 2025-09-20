@@ -1,19 +1,22 @@
 package com.employeeManagement.controller;
 
+import com.employeeManagement.dto.ApiResponse;
 import com.employeeManagement.dto.EmployeeRequestDto;
 import com.employeeManagement.model.Employee;
-import com.employeeManagement.repository.EmployeeRepository;
 import com.employeeManagement.service.EmployeeService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,12 +24,12 @@ import java.util.Map;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class EmployeeController {
     private final EmployeeService employeeService;
-    private final EmployeeRepository employeeRepository;
+
 
     @Autowired
-    public EmployeeController(EmployeeService employeeService, EmployeeRepository employeeRepository) {
+    public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
-        this.employeeRepository = employeeRepository;
+
     }
 
     // Employee Add Handler
@@ -95,6 +98,33 @@ public class EmployeeController {
         response.put("sortDir", sortDir);
 
         return ResponseEntity.ok(response);
+    }
+
+    // Added custom search handler
+    @GetMapping("/searchBy")
+    public ResponseEntity<ApiResponse<List<Employee>>> getAllEmployeesByCriteria(
+            @RequestParam(required = false) String id,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String mobile,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+    ) {
+        ApiResponse<List<Employee>> apiResponse = new ApiResponse<>();
+        try {
+            List<Employee> employeesSearchList = employeeService.searchEmployeeByCriteriaWithDate(id, email, mobile, fromDate, toDate);
+            apiResponse.setStatus("Success");
+            apiResponse.setMessage("Employee search list successfully");
+            apiResponse.setMCode("200");
+            apiResponse.setData(employeesSearchList);
+            return ResponseEntity.ok(apiResponse);
+
+        } catch (Exception e) {
+            apiResponse.setStatus("Error");
+            apiResponse.setMessage(e.getMessage());
+            apiResponse.setMCode("500");
+            apiResponse.setData(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponse);
+        }
     }
 
 
