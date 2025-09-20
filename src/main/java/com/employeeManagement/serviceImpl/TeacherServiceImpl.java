@@ -90,13 +90,13 @@ public class TeacherServiceImpl implements TeacherService {
 
                 // Clean file name
                 String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
+                fileName = fileName.replace(" ", "_"); // optional: replace spaces
+                Path targetLocation = Paths.get(uploadDir).resolve(fileName);
 
-                // Save file to the folder
-                Path targetLocation = path.resolve(fileName);
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
-                teacher.setProfileImagePath(targetLocation.toString());
+                // Store this relative path in DB
+                teacher.setProfileImagePath("/uploads/" + fileName);
 
 
             } catch (Exception e) {
@@ -244,7 +244,6 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setDeletedAt(LocalDate.now());
         return teacherRepository.save(teacher);
     }
-
 
 
 }
