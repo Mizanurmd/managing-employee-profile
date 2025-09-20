@@ -85,14 +85,14 @@ public class TeacherServiceImpl implements TeacherService {
                 Path targetLocation = path.resolve(fileName);
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
-                teacher.setProfileImagePath(targetLocation.toString());
-
+                // Save only the file name in DB
+                teacher.setProfileImagePath(fileName);
 
             } catch (Exception e) {
                 throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
             }
         }
+
         Teacher savedTeacher = teacherRepository.save(teacher);
 
         return convertToDto(savedTeacher);
@@ -180,6 +180,12 @@ public class TeacherServiceImpl implements TeacherService {
 
     // convert Teacher into dto
     private TeacherResponseDto convertToDto(Teacher teacher) {
+        String imageUrl = null;
+        if (teacher.getProfileImagePath() != null && !teacher.getProfileImagePath().isEmpty()) {
+            // Extract only the file name
+            String fileName = Paths.get(teacher.getProfileImagePath()).getFileName().toString();
+            imageUrl = "http://localhost:8081/uploads/" + fileName;
+        }
         return TeacherResponseDto.builder()
                 .teacherId(teacher.getTeacherId())
                 .name(teacher.getName())
@@ -192,7 +198,7 @@ public class TeacherServiceImpl implements TeacherService {
                 .gender(Gender.valueOf(teacher.getGender().name()))
                 .highestEducation(teacher.getHighestEducation())
                 .skills(teacher.getSkills())
-                .profileImagePath(teacher.getProfileImagePath())
+                .profileImagePath(imageUrl)
                 .build();
     }
 
