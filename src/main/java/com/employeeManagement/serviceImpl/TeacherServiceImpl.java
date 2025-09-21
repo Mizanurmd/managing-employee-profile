@@ -11,6 +11,7 @@ import com.employeeManagement.repository.TeacherRepository;
 import com.employeeManagement.service.TeacherService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -77,27 +81,28 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setPresentAddress(teacherRequestDto.getPresentAddress());
         teacher.setPermanentAddress(teacherRequestDto.getPermanentAddress());
         teacher.setGender(teacherRequestDto.getGender());
-        teacher.setSkills(teacherRequestDto.getSkills());
+        // Convert list to comma-separated string
+        if (teacherRequestDto.getSkills() != null) {
+            teacher.setSkills(String.join(",", teacherRequestDto.getSkills()));
+        } else {
+            teacher.setSkills(null);
+        }
+
         teacher.setHighestEducation(teacherRequestDto.getHighestEducation());
 
         // photo if provided
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
                 Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
-
                 // Create directory if not exists
                 Files.createDirectories(path);
-
                 // Clean file name
                 String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
                 fileName = fileName.replace(" ", "_"); // optional: replace spaces
                 Path targetLocation = Paths.get(uploadDir).resolve(fileName);
-
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
                 // Store this relative path in DB
                 teacher.setProfileImagePath("/uploads/" + fileName);
-
 
             } catch (Exception e) {
                 throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
@@ -120,27 +125,27 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setPresentAddress(teacherRequestDto.getPresentAddress());
         teacher.setPermanentAddress(teacherRequestDto.getPermanentAddress());
         teacher.setGender(teacherRequestDto.getGender());
-        teacher.setSkills(teacherRequestDto.getSkills());
+        // Convert list to comma-separated string
+        if (teacherRequestDto.getSkills() != null) {
+            teacher.setSkills(String.join(",", teacherRequestDto.getSkills()));
+        } else {
+            teacher.setSkills(null);
+        }
         teacher.setHighestEducation(teacherRequestDto.getHighestEducation());
 
         // Update photo if provided
         if (imagePath != null && !imagePath.isEmpty()) {
             try {
                 Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
-
                 // Create directory if not exists
                 Files.createDirectories(path);
-
                 // Clean file name
                 String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
-
-                // Save file to the folder
-                Path targetLocation = path.resolve(fileName);
+                fileName = fileName.replace(" ", "_"); // optional: replace spaces
+                Path targetLocation = Paths.get(uploadDir).resolve(fileName);
                 Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
-                // Save file name/path to DB (assuming Teacher has a field `photoPath`)
-                teacher.setProfileImagePath(targetLocation.toString());
-
+                // Store this relative path in DB
+                teacher.setProfileImagePath("/uploads/" + fileName);
 
             } catch (Exception e) {
                 throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
@@ -190,39 +195,48 @@ public class TeacherServiceImpl implements TeacherService {
 
     // convert Teacher into dto
     private TeacherResponseDto convertToDto(Teacher teacher) {
-        return TeacherResponseDto.builder()
-                .teacherId(teacher.getTeacherId())
-                .name(teacher.getName())
-                .mobile(teacher.getMobile())
-                .email(teacher.getEmail())
-                .nid(teacher.getNid())
-                .dateOfBirth(teacher.getDateOfBirth())
-                .presentAddress(teacher.getPresentAddress())
-                .permanentAddress(teacher.getPermanentAddress())
-                .gender(Gender.valueOf(teacher.getGender().name()))
-                .highestEducation(teacher.getHighestEducation())
-                .skills(teacher.getSkills())
-                .profileImagePath(teacher.getProfileImagePath())
-                .build();
+        TeacherResponseDto dto = new TeacherResponseDto();
+        dto.setTeacherId(teacher.getTeacherId());
+        dto.setName(teacher.getName());
+        dto.setMobile(teacher.getMobile());
+        dto.setEmail(teacher.getEmail());
+        dto.setNid(teacher.getNid());
+        dto.setDateOfBirth(teacher.getDateOfBirth());
+        dto.setPresentAddress(teacher.getPresentAddress());
+        dto.setPermanentAddress(teacher.getPermanentAddress());
+        dto.setGender(teacher.getGender());
+        dto.setHighestEducation(teacher.getHighestEducation());
+        dto.setProfileImagePath(teacher.getProfileImagePath());
+
+        // Convert CSV string to list
+        if (teacher.getSkills() != null && !teacher.getSkills().isEmpty()) {
+            dto.setSkills(Arrays.asList(teacher.getSkills().split(",")));
+        } else {
+            dto.setSkills(new ArrayList<>());
+        }
+
+        return dto;
     }
 
-    // Convert Teacher -> TeacherBackup
+
     private TeacherBackup convertToBackup(Teacher teacher) {
-        return TeacherBackup.builder()
-                .teacherId(teacher.getTeacherId())
-                .name(teacher.getName())
-                .mobile(teacher.getMobile())
-                .email(teacher.getEmail())
-                .nid(teacher.getNid())
-                .dateOfBirth(teacher.getDateOfBirth())
-                .presentAddress(teacher.getPresentAddress())
-                .permanentAddress(teacher.getPermanentAddress())
-                .gender(teacher.getGender().name()) // store enum as String
-                .highestEducation(teacher.getHighestEducation())
-                .profileImagePath(teacher.getProfileImagePath())
-                .skills(new ArrayList<>(teacher.getSkills())) // prevent mutability issues
-                .deletedAt(LocalDate.now())
-                .build();
+        TeacherBackup teacherBackup = new TeacherBackup();
+        teacherBackup.setTeacherId(teacher.getTeacherId());
+        teacherBackup.setName(teacher.getName());
+        teacherBackup.setMobile(teacher.getMobile());
+        teacherBackup.setEmail(teacher.getEmail());
+        teacherBackup.setNid(teacher.getNid());
+        teacherBackup.setDateOfBirth(teacher.getDateOfBirth());
+        teacherBackup.setPresentAddress(teacher.getPresentAddress());
+        teacherBackup.setPermanentAddress(teacher.getPermanentAddress());
+        teacherBackup.setGender(teacher.getGender());
+        teacherBackup.setHighestEducation(teacher.getHighestEducation());
+        teacherBackup.setSkills(teacher.getSkills());
+        teacherBackup.setProfileImagePath(teacher.getProfileImagePath());
+        teacherBackup.setDeletedAt(LocalDate.now());
+
+
+        return teacherBackup;
     }
 
     //Soft delete
@@ -235,8 +249,20 @@ public class TeacherServiceImpl implements TeacherService {
             throw new RuntimeException("Teacher with ID " + teacherId + " is already deleted.");
         }
 
-        // Backup record
-        TeacherBackup backupEntity = convertToBackup(teacher);
+        // Backup record check
+        Optional<TeacherBackup> existingBackupOpt = teacherBackupRepository.findByTeacherId(teacherId);
+        TeacherBackup backupEntity;
+        if (existingBackupOpt.isPresent()) {
+            // Update existing backup
+            backupEntity = existingBackupOpt.get();
+            BeanUtils.copyProperties(teacher, backupEntity, "id");
+            backupEntity.setDeletedAt(LocalDate.now()); // optional timestamp
+        } else {
+            // Create new backup
+            backupEntity = convertToBackup(teacher);
+            backupEntity.setDeletedAt(LocalDate.now()); // optional
+        }
+
         teacherBackupRepository.save(backupEntity);
 
         // Mark teacher as soft deleted

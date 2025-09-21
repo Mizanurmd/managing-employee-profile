@@ -55,10 +55,12 @@ public class Teacher {
     @Column(nullable = false)
     private Gender gender;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "teacher_skills", joinColumns = @JoinColumn(name = "teacher_id"))
-    @Column(name = "skill")
-    private List<String> skills = new ArrayList<>();
+    //    @ElementCollection(fetch = FetchType.EAGER)
+//    @CollectionTable(name = "teacher_skills", joinColumns = @JoinColumn(name = "teacher_id"))
+//    @Column(name = "skill")
+//    private List<String> skills = new ArrayList<>();
+    @Column(length = 1000)
+    private String skills;
 
     @NotBlank
     private String highestEducation;

@@ -1,5 +1,6 @@
 package com.employeeManagement.model;
 
+import com.employeeManagement.enums.Gender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,14 +30,12 @@ public class TeacherBackup {
     private LocalDate dateOfBirth;
     private String presentAddress;
     private String permanentAddress;
-    private String gender;
+    private Gender gender;
     private String highestEducation;
     private String profileImagePath;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "teacher_backup_skills", joinColumns = @JoinColumn(name = "teacher_id"))
-    @Column(name = "skills")
-    private List<String> skills = new ArrayList<>();
+    @Column(length = 1000)
+    private String skills;
 
     private LocalDate deletedAt;
 }
