@@ -170,7 +170,7 @@ public class TeacherServiceImpl implements TeacherService {
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        return teacherRepository.findAll(pageable);
+        return teacherRepository.findByActiveYNFalse(pageable);
     }
 
     @Override
@@ -231,7 +231,7 @@ public class TeacherServiceImpl implements TeacherService {
         Teacher teacher = teacherRepository.findByTeacherId(teacherId)
                 .orElseThrow(() -> new RuntimeException("Teacher Not Found with :: " + teacherId));
 
-        if (teacher.isDeleted() == true) {
+        if (teacher.isActiveYN() == true) {
             throw new RuntimeException("Teacher with ID " + teacherId + " is already deleted.");
         }
 
@@ -240,7 +240,7 @@ public class TeacherServiceImpl implements TeacherService {
         teacherBackupRepository.save(backupEntity);
 
         // Mark teacher as soft deleted
-        teacher.setDeleted(true);
+        teacher.setActiveYN(true);
         teacher.setDeletedAt(LocalDate.now());
         return teacherRepository.save(teacher);
     }

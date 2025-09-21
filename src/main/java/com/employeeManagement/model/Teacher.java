@@ -66,8 +66,8 @@ public class Teacher {
     private String profileImagePath; // store file path
 
     // Soft delete fields
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted = false;
+    @Column(name = "active_yn", nullable = false)
+    private boolean activeYN = false;
 
     @Column(name = "deleted_at")
     private LocalDate deletedAt;
