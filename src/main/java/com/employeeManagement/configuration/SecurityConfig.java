@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/webjars/**").permitAll()
                         .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**", "/api/v1/teachers/**").authenticated()
                         .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**").hasAnyAuthority("ADMIN", "USER")
-                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**", "/api/v1/teachers/**").hasAnyAuthority("ADMIN")
+                        .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**", "/api/v1/teachers/**", "/api/v1/students/**", "/api/v1/addresses/**").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(
