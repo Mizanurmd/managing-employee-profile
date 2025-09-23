@@ -1,7 +1,6 @@
-package com.employeeManagement.dto;
+package com.employeeManagement.responseDto;
 
 import com.employeeManagement.enums.Gender;
-import com.employeeManagement.model.Teacher;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

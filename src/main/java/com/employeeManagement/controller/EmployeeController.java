@@ -1,6 +1,6 @@
 package com.employeeManagement.controller;
 
-import com.employeeManagement.dto.ApiResponse;
+import com.employeeManagement.responseDto.ApiResponse;
 import com.employeeManagement.dto.EmployeeRequestDto;
 import com.employeeManagement.model.Employee;
 import com.employeeManagement.service.EmployeeService;

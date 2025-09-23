@@ -1,7 +1,7 @@
 package com.employeeManagement.service;
 
 import com.employeeManagement.dto.TeacherRequestDto;
-import com.employeeManagement.dto.TeacherResponseDto;
+import com.employeeManagement.responseDto.TeacherResponseDto;
 import com.employeeManagement.model.Teacher;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;

@@ -5,24 +5,22 @@ import com.employeeManagement.enums.StudentClass;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Past;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
+
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "students")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
+@Entity
+@Table(name = "students")
 public class Student {//one
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

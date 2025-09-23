@@ -1,4 +1,4 @@
-package com.employeeManagement.dto;
+package com.employeeManagement.responseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

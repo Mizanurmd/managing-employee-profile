@@ -1,9 +1,8 @@
 package com.employeeManagement.serviceImpl;
 
-import com.employeeManagement.dto.AddressDto;
-import com.employeeManagement.dto.AddressResponseDto;
+import com.employeeManagement.responseDto.AddressResponseDto;
 import com.employeeManagement.dto.StudentDto;
-import com.employeeManagement.dto.StudentResponseDto;
+import com.employeeManagement.responseDto.StudentResponseDto;
 import com.employeeManagement.model.Address;
 import com.employeeManagement.model.Student;
 import com.employeeManagement.repository.AddressRepository;
@@ -11,6 +10,10 @@ import com.employeeManagement.repository.StudentRepository;
 import com.employeeManagement.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -110,23 +113,82 @@ public class StudentServiceImpl implements StudentService {
             savedStudent.setAddresses(addresses);
         }
 
-        // 5️ Map to response DTO
-        List<AddressResponseDto> addressResponses = addresses.stream().map(a -> AddressResponseDto.builder()
-                .addressId(a.getAddressId())
-                .street(a.getStreet())
-                .city(a.getCity())
-                .state(a.getState())
-                .presentAddress(a.getPresentAddress())
-                .permanentAddress(a.getPermanentAddress())
-                .build()).toList();
 
-        //6 Convert to Response DTO
+        //5 Convert to Response DTO
         return convertStudentToStudentResponseDto(savedStudent);
     }
 
     @Override
-    public Student updateStudent(long id, StudentDto studentDto, MultipartFile imagePath) {
-        return null;
+    public StudentResponseDto updateStudent(long id, StudentDto studentDto, MultipartFile imagePath) {
+        Student student = studentRepository.findById(id).orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+        // Update student fields using builder-like style
+        student.toBuilder()
+                .firstName(studentDto.getFirstName())
+                .lastName(studentDto.getLastName())
+                .fatherName(studentDto.getFatherName())
+                .motherName(studentDto.getMotherName())
+                .admissionNumber(studentDto.getAdmissionNumber())
+                .dateOfBirth(studentDto.getDateOfBirth())
+                .gender(studentDto.getGender())
+                .email(studentDto.getEmail())
+                .phoneNumber(studentDto.getPhoneNumber())
+                .studentClass(studentDto.getStudentClass())
+                .admissionDate(studentDto.getAdmissionDate())
+                .section(studentDto.getSection())
+                .rollNumber(studentDto.getRollNumber())
+                .active(studentDto.isActive())
+                .build();
+        // photo if provided
+        if (imagePath != null && !imagePath.isEmpty()) {
+            try {
+                Path path = Paths.get(uploadDir).toAbsolutePath().normalize();
+                // Create directory if not exists
+                Files.createDirectories(path);
+                // Clean file name
+                String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
+                fileName = fileName.replace(" ", "_");
+                Path targetLocation = Paths.get(uploadDir).resolve(fileName);
+                Files.copy(imagePath.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+                // Store this relative path in DB
+                student.setProfileImagePath("/uploads/" + fileName);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Could not store file: " + imagePath.getOriginalFilename(), e);
+            }
+        }
+
+        Student updatedStudent = studentRepository.save(student);
+
+        // Handle address updates (replace old with new)
+        if (studentDto.getAddresses() != null && !studentDto.getAddresses().isEmpty()) {
+            List<Address> addresses = studentDto.getAddresses().stream()
+                    .map(dto -> Address.builder()
+                            .street(dto.getStreet())
+                            .city(dto.getCity())
+                            .state(dto.getState())
+                            .presentAddress(dto.getPresentAddress())
+                            .permanentAddress(dto.getPermanentAddress())
+                            .student(updatedStudent)
+                            .build())
+                    .toList();
+
+            // delete old addresses first (to avoid duplicates if required)
+            addressRepository.deleteAll(updatedStudent.getAddresses());
+
+            addressRepository.saveAll(addresses);
+            updatedStudent.setAddresses(addresses);
+        }
+        return convertStudentToStudentResponseDto(updatedStudent);
+    }
+
+    @Override
+    public Page<StudentResponseDto> getAllStudents(int page, int size, String sortField, String sortDirection) {
+        Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortField).ascending()
+                : Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Student> students = studentRepository.findAll(pageable);
+        return students.map(this:: convertStudentToStudentResponseDto);
     }
 
     @Override

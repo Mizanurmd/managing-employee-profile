@@ -1,4 +1,4 @@
-package com.employeeManagement.dto;
+package com.employeeManagement.responseDto;
 
 import com.employeeManagement.enums.Gender;
 import com.employeeManagement.enums.StudentClass;

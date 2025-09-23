@@ -2,8 +2,7 @@ package com.employeeManagement.serviceImpl;
 
 
 import com.employeeManagement.dto.TeacherRequestDto;
-import com.employeeManagement.dto.TeacherResponseDto;
-import com.employeeManagement.enums.Gender;
+import com.employeeManagement.responseDto.TeacherResponseDto;
 import com.employeeManagement.model.Teacher;
 import com.employeeManagement.model.TeacherBackup;
 import com.employeeManagement.repository.TeacherBackupRepository;
@@ -29,7 +28,6 @@ import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 

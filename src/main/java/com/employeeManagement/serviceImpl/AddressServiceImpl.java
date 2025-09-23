@@ -1,7 +1,7 @@
 package com.employeeManagement.serviceImpl;
 
 import com.employeeManagement.dto.AddressDto;
-import com.employeeManagement.dto.AddressResponseDto;
+import com.employeeManagement.responseDto.AddressResponseDto;
 import com.employeeManagement.model.Address;
 import com.employeeManagement.model.Student;
 import com.employeeManagement.repository.AddressRepository;

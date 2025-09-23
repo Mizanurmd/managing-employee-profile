@@ -1,7 +1,7 @@
 package com.employeeManagement.service;
 
 import com.employeeManagement.dto.AddressDto;
-import com.employeeManagement.dto.AddressResponseDto;
+import com.employeeManagement.responseDto.AddressResponseDto;
 import com.employeeManagement.model.Address;
 
 import java.util.Optional;

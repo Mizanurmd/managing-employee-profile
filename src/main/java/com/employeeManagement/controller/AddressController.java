@@ -1,16 +1,14 @@
 package com.employeeManagement.controller;
 
 import com.employeeManagement.dto.AddressDto;
-import com.employeeManagement.dto.AddressResponseDto;
-import com.employeeManagement.dto.ApiResponse;
-import com.employeeManagement.model.Address;
+import com.employeeManagement.responseDto.AddressResponseDto;
+import com.employeeManagement.responseDto.ApiResponse;
 import com.employeeManagement.service.AddressService;
 import com.employeeManagement.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/addresses")
