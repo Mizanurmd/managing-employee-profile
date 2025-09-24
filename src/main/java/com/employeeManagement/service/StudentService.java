@@ -11,11 +11,11 @@ import java.util.Optional;
 public interface StudentService {
     StudentResponseDto addStudent(StudentDto studentDto, MultipartFile file);
 
+    Optional<Student> studentById(long id);
+
     StudentResponseDto updateStudent(long id, StudentDto studentDto, MultipartFile imagePath);
 
     Page<StudentResponseDto> getAllStudents(int page, int size, String sortField, String sortDirection);
-
-    Optional<Student> getStudent(long id);
 
     Optional<Student> deleteStudent(long id);
 }

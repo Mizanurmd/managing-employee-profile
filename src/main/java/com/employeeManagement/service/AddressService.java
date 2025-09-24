@@ -7,11 +7,11 @@ import com.employeeManagement.model.Address;
 import java.util.Optional;
 
 public interface AddressService {
-    AddressResponseDto saveAddress(AddressDto addressDto);
+    Address saveAddress(AddressDto addressDto);
 
-    Address updateAddress(Long addressId, AddressDto addressDto);
+    Optional<Address> addressById(long addressId);
 
-    Optional<Address> getAddressById(Long addressId);
+    Address updateAddress(long addressId, AddressDto addressDto);
 
-    Optional<Address> deleteById(Long addressId);
+    Optional<Address> deleteById(long addressId);
 }

@@ -1,6 +1,7 @@
 package com.employeeManagement.controller;
 
 import com.employeeManagement.dto.AddressDto;
+import com.employeeManagement.model.Address;
 import com.employeeManagement.responseDto.AddressResponseDto;
 import com.employeeManagement.responseDto.ApiResponse;
 import com.employeeManagement.service.AddressService;
@@ -10,18 +11,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/addresses")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class AddressController {
 
     private final AddressService addressService;
-    private final StudentService studentService;
+
 
     @Autowired
-    public AddressController(AddressService addressService, StudentService studentService) {
+    public AddressController(AddressService addressService) {
         this.addressService = addressService;
-        this.studentService = studentService;
     }
 
     // Save Address Handler
@@ -45,6 +47,48 @@ public class AddressController {
         }
 
 
+    }
+
+    // get Address by id
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Address>> getAddressById(@PathVariable("id") long id) {
+        ApiResponse response = new ApiResponse();
+        try {
+           Optional<Address> address = addressService.addressById(id);
+            response.setStatus("Success");
+            response.setMessage("Address get successfully");
+            response.setMCode("200");
+            response.setData(address);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Address get failed");
+            response.setMCode("500");
+            response.setData(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Update Address
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<AddressDto>> updateAddress(@PathVariable("id") long id, @RequestBody AddressDto dto) {
+        ApiResponse response = new ApiResponse();
+        try {
+            Address updateAddress= addressService.updateAddress(id, dto);
+            response.setStatus("Success");
+            response.setMessage("Address updated successfully");
+            response.setMCode("200");
+            response.setData(updateAddress);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Address update failed");
+            response.setMCode("500");
+            response.setData(e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 

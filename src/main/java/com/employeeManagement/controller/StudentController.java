@@ -8,7 +8,6 @@ import com.employeeManagement.service.StudentService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -19,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/v1/students")
@@ -67,32 +67,41 @@ public class StudentController {
         }
     }
 
-    // Update Student Handler
+
     @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<StudentResponseDto>> updateStudent(
             @PathVariable("id") Long id,
-            @RequestPart("studentDto") String studentDtoJson,
+            @RequestPart("studentDto") String studentDtoJson,   // raw JSON string
             @RequestPart(value = "file", required = false) MultipartFile file
-    ) {
+    ) throws JsonProcessingException {
+
+        // Deserialize JSON to StudentDto
+
+        objectMapper.registerModule(new JavaTimeModule());
+        StudentDto studentDto = objectMapper.readValue(studentDtoJson, StudentDto.class);
+
         ApiResponse<StudentResponseDto> response = new ApiResponse<>();
         try {
-            StudentDto studentDto = objectMapper.readValue(studentDtoJson, StudentDto.class);
-            StudentResponseDto updatedStudent = studentService.updateStudent(id, studentDto, file);
+            // Call service which returns StudentResponseDto
+            StudentResponseDto savedStudent = studentService.updateStudent(id, studentDto, file);
+
             response.setStatus("Success");
-            response.setMessage("Student updated successfully");
+            response.setMessage("Student created successfully");
             response.setMCode("200");
-            response.setData(updatedStudent);
+            response.setData(savedStudent);
+
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.setStatus("Error");
-            response.setMessage("Update Student Failed: " + e.getMessage());
+            response.setMessage("Create Student Failed: " + e.getMessage());
             response.setMCode("500");
             response.setData(null);
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
-
     }
+
 
     // Get All Student Handler
     @GetMapping("/all")
@@ -111,6 +120,28 @@ public class StudentController {
         map.put("sortField", sortField);
         map.put("sortDirection", sortDirection);
         return new ResponseEntity<>(map, HttpStatus.OK);
+
+    }
+
+    //Delete student Handler
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Student>> getStudentById(@PathVariable("id") long id) {
+        ApiResponse<Student> response = new ApiResponse<>();
+        try {
+            studentService.deleteStudent(id);
+            response.setStatus("Success");
+            response.setMessage("Student found successfully");
+            response.setMCode("200");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Delete Student Failed: " + e.getMessage());
+            response.setMCode("500");
+            response.setData(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+        }
 
     }
 

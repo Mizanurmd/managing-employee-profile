@@ -24,7 +24,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public AddressResponseDto saveAddress(AddressDto dto) {
+    public Address saveAddress(AddressDto dto) {
         Student student = studentRepository.findById(dto.getStudentId())
                 .orElseThrow(() -> new RuntimeException("Student not found with id: " + dto.getStudentId()));
 
@@ -39,34 +39,42 @@ public class AddressServiceImpl implements AddressService {
 
         Address savedAddress = addressRepository.save(address);
 
-        return convertAddressToDto(savedAddress);
+        return savedAddress;
+    }
+
+    @Override
+    public Optional<Address> addressById(long addressId) {
+        return addressRepository.findById(addressId);
+    }
+
+    @Override
+    public Address updateAddress(long addressId, AddressDto addressDto) {
+        Address existingAddress = addressById(addressId).orElseThrow(() -> new RuntimeException("Address not found with id: " + addressId));
+        existingAddress.setStreet(addressDto.getStreet());
+        existingAddress.setCity(addressDto.getCity());
+        existingAddress.setState(addressDto.getState());
+        existingAddress.setPresentAddress(addressDto.getPresentAddress());
+        existingAddress.setPermanentAddress(addressDto.getPermanentAddress());
+        Address updatedAddress = addressRepository.save(existingAddress);
+
+        return updatedAddress;
     }
 
 
     @Override
-    public Address updateAddress(Long addressId, AddressDto addressDto) {
-        return null;
-    }
-
-    @Override
-    public Optional<Address> getAddressById(Long addressId) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<Address> deleteById(Long addressId) {
+    public Optional<Address> deleteById(long addressId) {
         return Optional.empty();
     }
 
     // Convert Address into Dto
-    public AddressResponseDto convertAddressToDto(Address address) {
-
-        return AddressResponseDto.builder()
-                .street(address.getStreet())
-                .city(address.getCity())
-                .state(address.getState())
-                .presentAddress(address.getPresentAddress())
-                .permanentAddress(address.getPermanentAddress())
-                .build();
-    }
+//    public AddressResponseDto convertAddressToDto(Address address) {
+//
+//        return AddressResponseDto.builder()
+//                .street(address.getStreet())
+//                .city(address.getCity())
+//                .state(address.getState())
+//                .presentAddress(address.getPresentAddress())
+//                .permanentAddress(address.getPermanentAddress())
+//                .build();
+//    }
 }

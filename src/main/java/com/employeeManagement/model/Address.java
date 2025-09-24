@@ -1,5 +1,6 @@
 package com.employeeManagement.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Address { //many
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long addressId;
+    private long addressId;
 
     private String street;
     private String city;
@@ -22,7 +23,8 @@ public class Address { //many
     private String presentAddress;
     private String permanentAddress;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "student_id")
+    @JsonIgnore()
     private Student student;
 }
