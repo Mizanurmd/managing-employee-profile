@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface StudentService {
     StudentResponseDto addStudent(StudentDto studentDto, MultipartFile file);
 
-    Optional<Student> studentById(long id);
+    Optional<Student> studentSingleById(Long id);
 
     StudentResponseDto updateStudent(long id, StudentDto studentDto, MultipartFile imagePath);
 

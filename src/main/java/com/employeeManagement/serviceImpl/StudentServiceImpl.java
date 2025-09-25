@@ -111,13 +111,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Optional<Student> studentById(long id) {
+    public Optional<Student> studentSingleById(Long id) {
         return studentRepository.findById(id);
     }
 
     @Override
     public StudentResponseDto updateStudent(long id, StudentDto studentDto, MultipartFile imagePath) {
-        Student existingStudent = studentById(id).orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+        Student existingStudent = studentSingleById(id).orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
         existingStudent.setFirstName(studentDto.getFirstName());
         existingStudent.setLastName(studentDto.getLastName());
         existingStudent.setFatherName(studentDto.getFatherName());

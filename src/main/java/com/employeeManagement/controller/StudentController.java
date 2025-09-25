@@ -1,5 +1,6 @@
 package com.employeeManagement.controller;
 
+import com.employeeManagement.model.Address;
 import com.employeeManagement.model.Student;
 import com.employeeManagement.responseDto.ApiResponse;
 import com.employeeManagement.dto.StudentDto;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 @RestController
@@ -138,12 +140,56 @@ public class StudentController {
             response.setStatus("Error");
             response.setMessage("Delete Student Failed: " + e.getMessage());
             response.setMCode("500");
-            response.setData(null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 
         }
 
     }
+
+    /*
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Student>> getSingleStudentById(@PathVariable("id") long id) {
+        ApiResponse<Student> response = new ApiResponse<>();
+        try {
+            studentService.studentById(id);
+            response.setStatus("Success");
+            response.setMessage("Student found successfully");
+            response.setMCode("200");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Delete Student Failed: " + e.getMessage());
+            response.setMCode("500");
+            response.setData(studentService.studentById(id));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+
+        }
+
+    }
+
+     */
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<Student>> getSingleStudentById(@PathVariable("id") Long id) {
+      Optional<Student> student = studentService.studentSingleById(id);
+        ApiResponse<Student> response = new ApiResponse<>();
+      if (student.isPresent()) {
+          response.setStatus("Success");
+          response.setMessage("Student found successfully");
+          response.setMCode("200");
+          response.setData(student.get());
+          return ResponseEntity.ok(response);
+      }else {
+          response.setStatus("Success");
+          response.setMessage("Student found failed");
+          response.setMCode("500");
+          response.setData(null);
+          return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+      }
+    }
+
+
 
 
 }
