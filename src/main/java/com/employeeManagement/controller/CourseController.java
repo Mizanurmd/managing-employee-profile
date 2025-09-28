@@ -1,7 +1,6 @@
 package com.employeeManagement.controller;
 
 import com.employeeManagement.dto.CourseDto;
-import com.employeeManagement.model.Course;
 import com.employeeManagement.responseDto.ApiResponse;
 import com.employeeManagement.service.CourseService;
 import org.springframework.http.HttpStatus;
