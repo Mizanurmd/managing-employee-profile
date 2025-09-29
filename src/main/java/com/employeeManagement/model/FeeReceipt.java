@@ -1,5 +1,7 @@
 package com.employeeManagement.model;
 
+import com.employeeManagement.enums.PaymentMode;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,15 +21,16 @@ public class FeeReceipt {
     private Long id;
 
     // Relation with Student entity
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
     @Column(nullable = false)
     private BigDecimal amountPaid;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String paymentMode; // e.g., CASH, CARD, BANK_TRANSFER, ONLINE
+    private PaymentMode paymentMode;
 
     @Column(nullable = false, unique = true)
     private String transactionId; // reference no. / receipt no.
