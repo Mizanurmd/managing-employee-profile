@@ -52,21 +52,21 @@ public class AddressController {
     // get Address by id
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Address>> getAddressById(@PathVariable("id") long id) {
+    public ApiResponse<Address> getAddressById(@PathVariable("id") long id) {
         ApiResponse response = new ApiResponse();
         try {
-           Optional<Address> address = addressService.addressById(id);
+            Optional<Address> address = addressService.addressById(id);
             response.setStatus("Success");
             response.setMessage("Address get successfully");
             response.setMCode("200");
             response.setData(address);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+            return response;
         } catch (Exception e) {
             response.setStatus("Error");
             response.setMessage("Address get failed");
             response.setMCode("500");
             response.setData(e.getMessage());
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            return response;
         }
     }
 
@@ -76,7 +76,7 @@ public class AddressController {
     public ResponseEntity<ApiResponse<AddressDto>> updateAddress(@PathVariable("id") long id, @RequestBody AddressDto dto) {
         ApiResponse response = new ApiResponse();
         try {
-            Address updateAddress= addressService.updateAddress(id, dto);
+            Address updateAddress = addressService.updateAddress(id, dto);
             response.setStatus("Success");
             response.setMessage("Address updated successfully");
             response.setMCode("200");
@@ -88,6 +88,26 @@ public class AddressController {
             response.setMCode("500");
             response.setData(e.getMessage());
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Address> deleteAddressById(@PathVariable("id") long id) {
+        ApiResponse response = new ApiResponse();
+        try {
+            Optional<Address> address = addressService.deleteById(id);
+            response.setStatus("Success");
+            response.setMessage("Address deleted successfully");
+            response.setMCode("200");
+            response.setData(address);
+            return response;
+        } catch (Exception e) {
+            response.setStatus("Error");
+            response.setMessage("Address deleted failed");
+            response.setMCode("500");
+            response.setData(e.getMessage());
+            return response;
         }
     }
 

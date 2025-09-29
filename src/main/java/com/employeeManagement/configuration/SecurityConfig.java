@@ -48,7 +48,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**").hasAnyAuthority("ADMIN", "USER")
                         .requestMatchers("/api/v1/employees/**", "/api/v1/reports/**",
                                 "/api/v1/teachers/**", "/api/v1/students/**",
-                                "/api/v1/addresses/**", "/api/v1/courses/**").hasAnyAuthority("ADMIN")
+                                "/api/v1/addresses/**", "/api/v1/courses/**",
+                                "/api/v1/pdf-Files/**").hasAnyAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider()).addFilterBefore(

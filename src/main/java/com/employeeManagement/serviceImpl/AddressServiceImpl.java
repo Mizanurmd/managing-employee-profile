@@ -63,18 +63,11 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public Optional<Address> deleteById(long addressId) {
-        return Optional.empty();
+        return addressRepository.findById(addressId).map(address -> {
+            addressRepository.delete(address);
+            return address;
+        });
     }
 
-    // Convert Address into Dto
-//    public AddressResponseDto convertAddressToDto(Address address) {
-//
-//        return AddressResponseDto.builder()
-//                .street(address.getStreet())
-//                .city(address.getCity())
-//                .state(address.getState())
-//                .presentAddress(address.getPresentAddress())
-//                .permanentAddress(address.getPermanentAddress())
-//                .build();
-//    }
+
 }
