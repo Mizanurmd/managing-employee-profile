@@ -9,7 +9,9 @@ import com.employeeManagement.paymentDto.CardPaymentDto;
 import com.employeeManagement.paymentDto.MobilePaymentDto;
 import com.employeeManagement.repository.FeeReceiptRepository;
 import com.employeeManagement.repository.StudentRepository;
+import com.employeeManagement.service.BkashPaymentGateway;
 import com.employeeManagement.service.FeeReceiptService;
+import com.employeeManagement.service.NagadPaymentGateway;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,11 +26,19 @@ public class FeeReceiptServiceImpl implements FeeReceiptService {
 
     private final FeeReceiptRepository feeReceiptRepository;
     private final StudentRepository studentRepository;
+    private final NagadPaymentGateway nagadPaymentGateway;
+    private final BkashPaymentGateway bkashPaymentGateway;
 
     @Autowired
-    public FeeReceiptServiceImpl(FeeReceiptRepository feeReceiptRepository, StudentRepository studentRepository) {
+    public FeeReceiptServiceImpl(FeeReceiptRepository feeReceiptRepository,
+                                 StudentRepository studentRepository,
+                                 NagadPaymentGateway nagadPaymentGateway,
+                                 BkashPaymentGateway bkashPaymentGateway
+    ) {
         this.feeReceiptRepository = feeReceiptRepository;
         this.studentRepository = studentRepository;
+        this.nagadPaymentGateway = nagadPaymentGateway;
+        this.bkashPaymentGateway = bkashPaymentGateway;
     }
 
     @Override
@@ -48,13 +58,20 @@ public class FeeReceiptServiceImpl implements FeeReceiptService {
         // Payment processing
         switch (feeReceiptDto.getPaymentMode()) {
             case CARD -> processCardPayment(feeReceiptDto.getCardPayment(), feeReceiptDto.getAmountPaid());
-            case NAGAD, BKASH ->
-                    processMobilePayment(feeReceiptDto.getMobilePayment(), feeReceiptDto.getAmountPaid(), feeReceiptDto.getPaymentMode());
+            case NAGAD -> processNagadPayment(feeReceiptDto.getMobilePayment(), feeReceiptDto.getAmountPaid());
             case BANK_TRANSFER -> processBankPayment(feeReceiptDto.getBankPayment(), feeReceiptDto.getAmountPaid());
             case ONLINE -> processOnlinePayment(feeReceiptDto.getAmountPaid());
         }
 
-        FeeReceipt feeReceipt = FeeReceipt.builder().student(student).amountPaid(feeReceiptDto.getAmountPaid()).paymentMode(feeReceiptDto.getPaymentMode()).transactionId(feeReceiptDto.getTransactionId()).paymentDate(feeReceiptDto.getPaymentDate()).remarks(feeReceiptDto.getRemarks()).createdAt(LocalDateTime.now()).build();
+        FeeReceipt feeReceipt = FeeReceipt.builder().
+                student(student)
+                .amountPaid(feeReceiptDto.getAmountPaid())
+                .paymentMode(feeReceiptDto.getPaymentMode())
+                .transactionId(feeReceiptDto.getTransactionId())
+                .paymentDate(feeReceiptDto.getPaymentDate())
+                .remarks(feeReceiptDto.getRemarks())
+                .createdAt(LocalDateTime.now())
+                .build();
         return feeReceiptRepository.save(feeReceipt);
     }
 
@@ -77,8 +94,8 @@ public class FeeReceiptServiceImpl implements FeeReceiptService {
         //  Process payment again (simulate validation)
         switch (feeReceiptDto.getPaymentMode()) {
             case CARD -> processCardPayment(feeReceiptDto.getCardPayment(), feeReceiptDto.getAmountPaid());
-            case NAGAD, BKASH ->
-                    processMobilePayment(feeReceiptDto.getMobilePayment(), feeReceiptDto.getAmountPaid(), feeReceiptDto.getPaymentMode());
+            case NAGAD -> processNagadPayment(feeReceiptDto.getMobilePayment(), feeReceiptDto.getAmountPaid());
+            case BKASH -> processBkashPayment(feeReceiptDto.getMobilePayment(), feeReceiptDto.getAmountPaid());
             case BANK_TRANSFER -> processBankPayment(feeReceiptDto.getBankPayment(), feeReceiptDto.getAmountPaid());
             case ONLINE -> processOnlinePayment(feeReceiptDto.getAmountPaid());
         }
@@ -122,12 +139,51 @@ public class FeeReceiptServiceImpl implements FeeReceiptService {
     }
 
     // NAGAD / BKASH
-    private void processMobilePayment(MobilePaymentDto mobile, BigDecimal amount, PaymentMode mode) {
-        if (mobile == null || mobile.getMobileNumber().isBlank() || mobile.getTransactionCode().isBlank())
-            throw new RuntimeException(mode + " payment details required");
+//    private void processMobilePayment(MobilePaymentDto mobile, BigDecimal amount, PaymentMode mode) {
+//        if (mobile == null || mobile.getMobileNumber().isBlank() || mobile.getTransactionCode().isBlank())
+//            throw new RuntimeException(mode + " payment details required");
+//
+//        System.out.println("Processing " + mode + " payment: " + amount + " for mobile: " + mobile.getMobileNumber());
+//    }
 
-        System.out.println("Processing " + mode + " payment: " + amount + " for mobile: " + mobile.getMobileNumber());
+    // NAGAD Payment Processing
+    private void processNagadPayment(MobilePaymentDto mobile, BigDecimal amount) {
+        if (mobile == null || mobile.getMobileNumber().isBlank() || mobile.getTransactionCode().isBlank()) {
+            throw new RuntimeException("NAGAD payment details required");
+        }
+
+        boolean verified = nagadPaymentGateway.verifyTransaction(
+                mobile.getTransactionCode(),
+                mobile.getMobileNumber(),
+                amount
+        );
+
+        if (!verified) {
+            throw new RuntimeException("NAGAD transaction verification failed!");
+        }
+
+        System.out.println("NAGAD payment verified for: " + mobile.getMobileNumber());
     }
+
+    //Bkash
+    private void processBkashPayment(MobilePaymentDto mobile, BigDecimal amount) {
+        if (mobile == null || mobile.getMobileNumber().isBlank() || mobile.getTransactionCode().isBlank()) {
+            throw new RuntimeException("Bkash payment details required");
+        }
+        boolean verified = bkashPaymentGateway.verifyTransaction(
+                mobile.getTransactionCode(),
+                mobile.getMobileNumber(),
+                amount
+        );
+
+        if (!verified) {
+            throw new RuntimeException("Bkash transaction verification failed!");
+        }
+
+        System.out.println("Bkash payment verified for: " + mobile.getMobileNumber());
+
+    }
+
 
     // BANK_TRANSFER
     private void processBankPayment(BankPaymentDto bank, BigDecimal amount) {
