@@ -26,88 +26,106 @@ public class AddressController {
         this.addressService = addressService;
     }
 
+
     // Save Address Handler
     @PostMapping("/save")
-    public ResponseEntity<ApiResponse<AddressResponseDto>> saveAddress(
-            @RequestBody AddressDto dto) {
-        ApiResponse response = new ApiResponse();
+    public ResponseEntity<ApiResponse<Address>> saveAddress(@RequestBody AddressDto dto) {
+        ApiResponse<Address> response = new ApiResponse<>();
         try {
+            Address save = addressService.saveAddress(dto);
             response.setStatus("Success");
             response.setMessage("Address saved successfully");
             response.setMCode("200");
-            response.setData(addressService.saveAddress(dto));
+            response.setData(save);
             return new ResponseEntity<>(response, HttpStatus.OK);
 
         } catch (Exception e) {
             response.setStatus("Error");
             response.setMessage("Address save failed");
             response.setMCode("500");
-            response.setData(e.getMessage());
+            response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
     }
+
 
     // get Address by id
 
     @GetMapping("/{id}")
-    public ApiResponse<Address> getAddressById(@PathVariable("id") long id) {
-        ApiResponse response = new ApiResponse();
+    public ResponseEntity<ApiResponse<Address>> getAddressById(@PathVariable("id") long id) {
+        ApiResponse<Address> response = new ApiResponse<>();
         try {
-            Optional<Address> address = addressService.addressById(id);
-            response.setStatus("Success");
-            response.setMessage("Address get successfully");
-            response.setMCode("200");
-            response.setData(address);
-            return response;
+            Optional<Address> addressOptional = addressService.addressById(id);
+            if (addressOptional.isPresent()) {
+                response.setStatus("Success");
+                response.setMessage("Address retrieved successfully");
+                response.setMCode("200");
+                response.setData(addressOptional.get());
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                response.setStatus("Error");
+                response.setMessage("Address not found");
+                response.setMCode("404");
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
             response.setStatus("Error");
-            response.setMessage("Address get failed");
+            response.setMessage("Failed to retrieve address");
             response.setMCode("500");
-            response.setData(e.getMessage());
-            return response;
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     // Update Address
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<ApiResponse<AddressDto>> updateAddress(@PathVariable("id") long id, @RequestBody AddressDto dto) {
-        ApiResponse response = new ApiResponse();
+    public ResponseEntity<ApiResponse<Address>> updateAddress(@PathVariable("id") long id,
+                                                              @RequestBody AddressDto dto) {
+        ApiResponse<Address> response = new ApiResponse<>();
         try {
-            Address updateAddress = addressService.updateAddress(id, dto);
+            Address updatedAddress = addressService.updateAddress(id, dto);
             response.setStatus("Success");
             response.setMessage("Address updated successfully");
             response.setMCode("200");
-            response.setData(updateAddress);
+            response.setData(updatedAddress);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus("Error");
             response.setMessage("Address update failed");
             response.setMCode("500");
-            response.setData(e.getMessage());
+            response.setData(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Address> deleteAddressById(@PathVariable("id") long id) {
-        ApiResponse response = new ApiResponse();
+    public ResponseEntity<ApiResponse<Address>> deleteAddressById(@PathVariable("id") long id) {
+        ApiResponse<Address> response = new ApiResponse<>();
         try {
-            Optional<Address> address = addressService.deleteById(id);
-            response.setStatus("Success");
-            response.setMessage("Address deleted successfully");
-            response.setMCode("200");
-            response.setData(address);
-            return response;
+            Optional<Address> deletedAddress = addressService.deleteById(id);
+            if (deletedAddress.isPresent()) {
+                response.setStatus("Success");
+                response.setMessage("Address deleted successfully");
+                response.setMCode("200");
+                response.setData(deletedAddress.get());
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                response.setStatus("Error");
+                response.setMessage("Address not found");
+                response.setMCode("404");
+                response.setData(null);
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
             response.setStatus("Error");
-            response.setMessage("Address deleted failed");
+            response.setMessage("Address delete failed");
             response.setMCode("500");
-            response.setData(e.getMessage());
-            return response;
+            response.setData(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
