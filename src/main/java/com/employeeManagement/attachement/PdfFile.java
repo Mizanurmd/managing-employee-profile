@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@Entity(name = "pdf-file")
+@Entity(name = "pdf_file")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

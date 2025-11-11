@@ -1,7 +1,6 @@
 package com.employeeManagement.controller;
 
 import com.employeeManagement.dto.UserRegistrationCreateDto;
-import com.employeeManagement.model.UserRegistration;
 import com.employeeManagement.responseDto.UserRegistrationResponseDto;
 import com.employeeManagement.service.UserRegistrationService;
 import jakarta.validation.Valid;
@@ -10,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/registrations")
@@ -20,6 +20,11 @@ public class UserRegistrationController {
     @Autowired
     public UserRegistrationController(UserRegistrationService userRegistrationService) {
         this.userRegistrationService = userRegistrationService;
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<UserRegistrationResponseDto>> getAllUserRegister() {
+        return ResponseEntity.ok(userRegistrationService.findAll());
     }
 
     @PostMapping("/save")
