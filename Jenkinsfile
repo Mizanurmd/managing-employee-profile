@@ -1,6 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        timestamps()
+        buildDiscarder(logRotator(
+                numToKeepStr: '10',
+                artifactNumToKeepStr: '10'
+        ))
+        skipDefaultCheckout(true)
+    }
+
     environment {
         APP_NAME = 'managing-employee-profile'
     }
@@ -9,32 +18,13 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/Mizanurmd/managing-employee-profile.git'
+                checkout scm
             }
         }
 
-        stage('Clean') {
+        stage('Build') {
             steps {
-                bat 'mvn clean'
-            }
-        }
-
-        stage('Compile') {
-            steps {
-                bat 'mvn compile'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                bat 'mvn test'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                bat 'mvn package'
+                bat 'mvn clean package'
             }
         }
 
@@ -46,22 +36,27 @@ pipeline {
     }
 
     post {
-        success {
-            echo 'Build Successful'
+
+        always {
+            junit '**/target/surefire-reports/*.xml'
+            cleanWs()
         }
 
-    post {
-        always {
-           junit '**/target/surefire-reports/*.xml'
-            }
+        success {
+            echo '======================================='
+            echo 'BUILD SUCCESSFUL'
+            echo "Application : ${APP_NAME}"
+            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo "Branch      : ${env.BRANCH_NAME}"
+            echo '======================================='
         }
 
         failure {
-            echo 'Build Failed'
-        }
-
-        always {
-            cleanWs()
+            echo '======================================='
+            echo 'BUILD FAILED'
+            echo "Application : ${APP_NAME}"
+            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo '======================================='
         }
     }
 }
