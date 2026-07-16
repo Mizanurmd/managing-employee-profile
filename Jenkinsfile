@@ -50,6 +50,12 @@ pipeline {
             echo 'Build Successful'
         }
 
+    post {
+        always {
+           junit '**/target/surefire-reports/*.xml'
+            }
+        }
+
         failure {
             echo 'Build Failed'
         }
