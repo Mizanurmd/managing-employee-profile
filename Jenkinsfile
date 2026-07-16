@@ -33,6 +33,32 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
+
+        stage('Copy Artifact') {
+            steps {
+                bat '''
+                if not exist D:\\deploy\\app mkdir D:\\deploy\\app
+                copy /Y target\\*.jar D:\\deploy\\app
+                '''
+            }
+        }
+
+        stage('Stop Application') {
+            steps {
+                bat '''
+                taskkill /F /IM java.exe || exit /B 0
+                '''
+            }
+        }
+
+        stage('Start Application') {
+            steps {
+                bat '''
+                start "Spring Boot App" cmd /c java -jar D:\\deploy\\app\\managing-employee-profile-0.0.1-SNAPSHOT.jar
+                '''
+            }
+        }
+
     }
 
     post {
