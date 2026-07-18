@@ -1,11 +1,16 @@
 pipeline {
     agent any
 
+    tools {
+        jdk 'JDK25'
+        maven 'Maven'
+    }
+
     options {
         timestamps()
         buildDiscarder(logRotator(
-                numToKeepStr: '10',
-                artifactNumToKeepStr: '10'
+            numToKeepStr: '10',
+            artifactNumToKeepStr: '10'
         ))
         skipDefaultCheckout(true)
     }
@@ -38,7 +43,8 @@ pipeline {
     post {
 
         always {
-            junit '**/target/surefire-reports/*.xml'
+            junit testResults: '**/target/surefire-reports/*.xml',
+                  allowEmptyResults: true
             cleanWs()
         }
 
