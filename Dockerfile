@@ -1,4 +1,9 @@
-FROM eclipse-temurin:21.0.11_10-jdk-jammy
-COPY target/employeeManagement-0.0.1-SNAPSHOT.jar employeeManagement.jar
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+COPY target/employeeManagement-0.0.1-SNAPSHOT.jar app.jar
+
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "employeeManagement.jar"]
+
+ENTRYPOINT ["java","-jar","app.jar"]

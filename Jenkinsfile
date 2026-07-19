@@ -22,12 +22,14 @@ pipeline {
         IMAGE_NAME     = 'managing-employee-profile'
         IMAGE_TAG      = "${BUILD_NUMBER}"
         CONTAINER_NAME = 'managing-employee-profile'
-        APP_PORT       = '8081'
+
+        HOST_PORT      = '8081'
+        CONTAINER_PORT = '8081'
     }
 
     stages {
 
-        stage('Checkout') {
+        stage('Checkout Source') {
             steps {
                 checkout scm
             }
@@ -42,7 +44,7 @@ pipeline {
 
         stage('Build Application') {
             steps {
-                bat 'mvn -B clean package -DskipTests'
+                bat 'mvn clean package -DskipTests'
             }
         }
 
@@ -63,11 +65,11 @@ pipeline {
             }
         }
 
-        stage('Stop Old Container') {
+        stage('Remove Old Container') {
             steps {
                 bat '''
-                docker stop %CONTAINER_NAME% 2>nul
-                docker rm %CONTAINER_NAME% 2>nul
+                docker rm -f %CONTAINER_NAME% >nul 2>&1
+                exit /b 0
                 '''
             }
         }
@@ -77,7 +79,7 @@ pipeline {
                 bat '''
                 docker run -d ^
                 --name %CONTAINER_NAME% ^
-                -p %APP_PORT%:%APP_PORT% ^
+                -p %HOST_PORT%:%CONTAINER_PORT% ^
                 --restart unless-stopped ^
                 %IMAGE_NAME%:%IMAGE_TAG%
                 '''
@@ -86,7 +88,7 @@ pipeline {
 
         stage('Verify Deployment') {
             steps {
-                bat 'docker ps'
+                bat 'docker ps -a'
                 bat 'docker images'
                 bat 'docker logs --tail 50 %CONTAINER_NAME%'
             }
@@ -103,28 +105,32 @@ pipeline {
 
         success {
             echo '=============================================='
-            echo ' BUILD SUCCESSFUL '
+            echo 'BUILD SUCCESSFUL'
             echo '=============================================='
             echo "Application : ${APP_NAME}"
             echo "Docker Image: ${IMAGE_NAME}:${IMAGE_TAG}"
             echo "Container   : ${CONTAINER_NAME}"
-            echo "Port        : ${APP_PORT}"
-            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo "Host Port   : ${HOST_PORT}"
+            echo "Build No    : ${BUILD_NUMBER}"
             echo '=============================================='
         }
 
         failure {
             echo '=============================================='
-            echo ' BUILD FAILED '
+            echo 'BUILD FAILED'
             echo '=============================================='
+
+            bat 'docker ps -a'
+            bat 'docker logs %CONTAINER_NAME% || exit /b 0'
+
             echo "Application : ${APP_NAME}"
-            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo "Build No    : ${BUILD_NUMBER}"
             echo '=============================================='
         }
 
         always {
-            junit testResults: '**/target/surefire-reports/*.xml',
-                  allowEmptyResults: true
+            junit allowEmptyResults: true,
+                  testResults: '**/target/surefire-reports/*.xml'
 
             cleanWs()
         }
