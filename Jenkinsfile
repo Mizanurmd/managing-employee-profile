@@ -18,10 +18,11 @@ pipeline {
     }
 
     environment {
-        APP_NAME = 'managing-employee-profile'
-        IMAGE_NAME = 'managing-employee-profile'
-        IMAGE_TAG = "${BUILD_NUMBER}"
+        APP_NAME       = 'managing-employee-profile'
+        IMAGE_NAME     = 'managing-employee-profile'
+        IMAGE_TAG      = "${BUILD_NUMBER}"
         CONTAINER_NAME = 'managing-employee-profile'
+        APP_PORT       = '8081'
     }
 
     stages {
@@ -32,9 +33,16 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Java & Maven Version') {
             steps {
-                bat 'mvn clean package'
+                bat 'java -version'
+                bat 'mvn -version'
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                bat 'mvn -B clean package -DskipTests'
             }
         }
 
@@ -55,54 +63,70 @@ pipeline {
             }
         }
 
-        stage('Deploy Docker Container') {
+        stage('Stop Old Container') {
             steps {
                 bat '''
-                docker rm -f %CONTAINER_NAME% 2>nul
-
-                docker run -d ^
-                --name %CONTAINER_NAME% ^
-                -p 8081:8081 ^
-                --restart unless-stopped ^
-                %IMAGE_NAME%:latest
+                docker stop %CONTAINER_NAME% 2>nul
+                docker rm %CONTAINER_NAME% 2>nul
                 '''
             }
         }
 
-        stage('Verify Docker') {
+        stage('Run Docker Container') {
             steps {
-                bat 'docker images'
+                bat '''
+                docker run -d ^
+                --name %CONTAINER_NAME% ^
+                -p %APP_PORT%:%APP_PORT% ^
+                --restart unless-stopped ^
+                %IMAGE_NAME%:%IMAGE_TAG%
+                '''
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
                 bat 'docker ps'
+                bat 'docker images'
+                bat 'docker logs --tail 50 %CONTAINER_NAME%'
+            }
+        }
+
+        stage('Docker Cleanup') {
+            steps {
+                bat 'docker image prune -f'
             }
         }
     }
 
     post {
 
+        success {
+            echo '=============================================='
+            echo ' BUILD SUCCESSFUL '
+            echo '=============================================='
+            echo "Application : ${APP_NAME}"
+            echo "Docker Image: ${IMAGE_NAME}:${IMAGE_TAG}"
+            echo "Container   : ${CONTAINER_NAME}"
+            echo "Port        : ${APP_PORT}"
+            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo '=============================================='
+        }
+
+        failure {
+            echo '=============================================='
+            echo ' BUILD FAILED '
+            echo '=============================================='
+            echo "Application : ${APP_NAME}"
+            echo "Build No    : ${env.BUILD_NUMBER}"
+            echo '=============================================='
+        }
+
         always {
             junit testResults: '**/target/surefire-reports/*.xml',
                   allowEmptyResults: true
 
             cleanWs()
-        }
-
-        success {
-            echo '======================================='
-            echo 'BUILD SUCCESSFUL'
-            echo "Application : ${APP_NAME}"
-            echo "Image       : ${IMAGE_NAME}:${IMAGE_TAG}"
-            echo "Container   : ${CONTAINER_NAME}"
-            echo "Build No    : ${BUILD_NUMBER}"
-            echo "Branch      : ${env.BRANCH_NAME}"
-            echo '======================================='
-        }
-
-        failure {
-            echo '======================================='
-            echo 'BUILD FAILED'
-            echo "Application : ${APP_NAME}"
-            echo "Build No    : ${BUILD_NUMBER}"
-            echo '======================================='
         }
     }
 }
