@@ -93,7 +93,7 @@ pipeline {
             echo "Image       : ${IMAGE_NAME}:${IMAGE_TAG}"
             echo "Container   : ${CONTAINER_NAME}"
             echo "Build No    : ${BUILD_NUMBER}"
-            echo "Branch      : ${BRANCH_NAME}"
+            echo "Branch      : ${env.BRANCH_NAME}"
             echo '======================================='
         }
 
