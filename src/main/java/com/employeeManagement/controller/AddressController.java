@@ -1,5 +1,7 @@
 package com.employeeManagement.controller;
 
+import com.employeeManagement.base.BaseConstants;
+import com.employeeManagement.base.BaseResponse;
 import com.employeeManagement.dto.AddressDto;
 import com.employeeManagement.model.Address;
 import com.employeeManagement.responseDto.AddressResponseDto;
@@ -26,26 +28,16 @@ public class AddressController {
         this.addressService = addressService;
     }
 
-
     // Save Address Handler
     @PostMapping("/save")
-    public ResponseEntity<ApiResponse<Address>> saveAddress(@RequestBody AddressDto dto) {
-        ApiResponse<Address> response = new ApiResponse<>();
-        try {
-            Address save = addressService.saveAddress(dto);
-            response.setStatus("Success");
-            response.setMessage("Address saved successfully");
-            response.setMCode("200");
-            response.setData(save);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-
-        } catch (Exception e) {
-            response.setStatus("Error");
-            response.setMessage("Address save failed");
-            response.setMCode("500");
-            response.setData(null);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<BaseResponse<Address>> saveAddress(@RequestBody AddressDto dto) {
+        Address save = addressService.saveAddress(dto);
+        BaseResponse<Address>response = new BaseResponse<>();
+        response.setStatus(true);
+        response.setCode("201");
+        response.setMessage(BaseConstants.SAVE_MESSAGE);
+        response.setData(save);
+       return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 
